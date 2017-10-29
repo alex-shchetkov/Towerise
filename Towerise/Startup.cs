@@ -11,14 +11,18 @@ using Microsoft.AspNetCore.HttpOverrides;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 using System.Threading;
+using Backend;
 
 namespace Towerise
 {
     public class Startup
     {
+        private WorldState worldState;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            worldState = new WorldState();
         }
 
         public IConfiguration Configuration { get; }
@@ -48,8 +52,10 @@ namespace Towerise
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
+
                     WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await Echo(context, webSocket);
+                    await worldState.AddPlayer(webSocket);
+                    
                 }
                 else
                 {
@@ -89,17 +95,8 @@ namespace Towerise
         }
 
 
-        private async Task Echo(HttpContext context, WebSocket webSocket)
-        {
-            var buffer = new byte[1024 * 4];
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            while (!result.CloseStatus.HasValue)
-            {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
 
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-        }
+
+        
     }
 }
