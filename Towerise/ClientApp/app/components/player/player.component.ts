@@ -57,8 +57,8 @@ export class PlayerComponent implements AfterViewInit  {
     }
 
     ngAfterViewInit(): void {
-        this.socket = new WebSocket(this.url);// + window.location.hostname);
-        console.log(window.location);
+        this.socket = new WebSocket("ws://vrstudio.co");// + window.location.hostname);
+        //console.log(window.location);
         this.socket.onopen = (event: any) => {
             console.log("socket opened");
             this.sendPositionData();
