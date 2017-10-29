@@ -52,7 +52,7 @@ export class PlayerComponent implements AfterViewInit  {
         this.tY = 75;
         this.movements.x = 0;
         this.movements.y = 0;
-        this.url = "ws://" + window.location.host;
+        this.url = "ws://vrstudio.co";// + window.location.host;
         
     }
 
