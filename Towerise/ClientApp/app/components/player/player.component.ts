@@ -19,8 +19,8 @@ class Directions {
 })
 export class PlayerComponent {
 
-    protected x: number;
-    protected y: number;
+    public x: number;
+    public y: number;
     private readonly RATE: number = 10;
     private movements = new Movements();
 
@@ -31,7 +31,7 @@ export class PlayerComponent {
         this.movements.y = 0;
     }
 
-    protected keyDownHandler(key: string) {
+    public keyDownHandler(key: string) {
         if (key.toUpperCase() === Directions.RIGHT)
             this.movements.x = this.RATE;
         if (key.toUpperCase() === Directions.LEFT)
@@ -45,7 +45,7 @@ export class PlayerComponent {
         this.y += this.movements.y;
     }
 
-    protected keyUpHandler(key: string) {
+    public keyUpHandler(key: string) {
 
         if ([Directions.UP, Directions.DOWN].indexOf(key.toUpperCase()) !== -1) {
             this.movements.y = 0;

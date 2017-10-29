@@ -5,3 +5,30 @@
     <path d="M125,52.1L66.8,182.6h0h21.7h0l11.7-29.2h49.4l11.7,29.2h0h21.7h0L125,52.1L125,52.1L125,52.1L125,52.1
       L125,52.1z M142,135.4H108l17-40.9L142,135.4z" />
 </svg>
+
+<h1>WebSocket Sample Application</h1>
+<p #stateLabel id="stateLabel">Ready to connect...</p>
+<div>
+    <label for="connectionUrl">WebSocket Server URL:</label>
+    <input #connectionUrl id="connectionUrl" />
+    <button id="connectButton" type="submit" (click)="connectButtonClick()">Connect</button>
+</div>
+<p></p>
+<div>
+    <label for="sendMessage">Message to send:</label>
+    <input #sendMessage id="sendMessage" [class.disabled]="isSendMessageDisabled" />
+    <button id="sendButton" type="submit" [class.disabled]="isSendBtnDisabled" (click)="sendButtonClick()" >Send</button>
+    <button id="closeButton" [class.disabled]="isCloseBtnDisabled" (click)="closeButtonClick()">Close Socket</button>
+</div>
+
+<h2>Communication Log</h2>
+<table style="width: 800px">
+    <thead>
+        <tr>
+            <td style="width: 100px">From</td>
+            <td style="width: 100px">To</td>
+            <td>Data</td>
+        </tr>
+    </thead>
+    <tbody #commsLog id="commsLog"></tbody>
+</table>
