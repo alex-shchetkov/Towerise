@@ -1,4 +1,5 @@
 ﻿import { Component, AfterViewInit } from '@angular/core';
+import { getBaseUrl } from "../../app.module.browser";
 
 class Movements {
     x: number;
@@ -35,7 +36,6 @@ export class PlayerComponent implements AfterViewInit  {
     private readonly RATE: number = 10;
     private movements = new Movements();
     private socket: WebSocket;
-    private url: string;
 
     constructor() {
         this.x = 75;
@@ -52,13 +52,11 @@ export class PlayerComponent implements AfterViewInit  {
         this.tY = 75;
         this.movements.x = 0;
         this.movements.y = 0;
-        this.url = "ws://vrstudio.co";// + window.location.host;
         
     }
 
     ngAfterViewInit(): void {
-        this.socket = new WebSocket("ws://vrstudio.co");// + window.location.hostname);
-        //console.log(window.location);
+        this.socket = new WebSocket("ws://" + getBaseUrl().replace("http://",""));
         this.socket.onopen = (event: any) => {
             console.log("socket opened");
             this.sendPositionData();
