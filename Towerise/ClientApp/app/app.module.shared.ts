@@ -10,6 +10,7 @@ import { HomeComponent } from './components/home/home.component';
 import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
 import { CounterComponent } from './components/counter/counter.component';
 import { GameComponent } from "./components/game/game.component";
+import { PlayerComponent } from "./components/player/player.component";
 
 @NgModule({
     declarations: [
@@ -18,7 +19,8 @@ import { GameComponent } from "./components/game/game.component";
         CounterComponent,
         FetchDataComponent,
         HomeComponent,
-        GameComponent
+        GameComponent,
+        PlayerComponent
     ],
     imports: [
         CommonModule,
