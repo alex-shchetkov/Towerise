@@ -1,5 +1,4 @@
 ﻿import { Component } from '@angular/core';
-import { WindowRef } from "../window-ref.provider";
 
 class Movements {
     x: number;

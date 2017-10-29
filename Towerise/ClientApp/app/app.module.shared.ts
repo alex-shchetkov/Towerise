@@ -11,7 +11,6 @@ import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
 import { CounterComponent } from './components/counter/counter.component';
 import { GameComponent } from "./components/game/game.component";
 import { PlayerComponent } from "./components/player/player.component";
-import { WindowRef } from "./components/window-ref.provider";
 
 @NgModule({
     declarations: [
@@ -23,7 +22,6 @@ import { WindowRef } from "./components/window-ref.provider";
         GameComponent,
         PlayerComponent
     ],
-    providers: [WindowRef],
     imports: [
         CommonModule,
         HttpModule,
