@@ -11,7 +11,7 @@ namespace Towerise.Controllers
     {
         private static string[] Summaries = new[]
         {
-            "Another Kappa", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+            "Badger", "Badger", "Badger", "Badger", "Badger", "Badger", "Badger", "Mushroom", "Mushroom", "SNAAAAKEEEE"
         };
 
         [HttpGet("[action]")]
