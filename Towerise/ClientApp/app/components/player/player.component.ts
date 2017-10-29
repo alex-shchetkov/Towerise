@@ -56,7 +56,7 @@ export class PlayerComponent implements AfterViewInit  {
     }
 
     ngAfterViewInit(): void {
-        this.socket = new WebSocket("ws://" + getBaseUrl().replace("http://",""));
+        this.socket = new WebSocket("ws://" + getBaseUrl().replace("http://","")+"/ws");
         this.socket.onopen = (event: any) => {
             console.log("socket opened");
             this.sendPositionData();
