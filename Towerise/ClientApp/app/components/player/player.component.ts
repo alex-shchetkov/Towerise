@@ -24,7 +24,7 @@ export class PlayerComponent {
     private readonly RATE: number = 10;
     private movements = new Movements();
 
-    constructor(private winRef: WindowRef) {
+    constructor() {
         this.x = 75;
         this.y = 75;
         this.movements.x = 0;
