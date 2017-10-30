@@ -52,11 +52,10 @@ export class PlayerComponent implements AfterViewInit  {
         this.tY = 75;
         this.movements.x = 0;
         this.movements.y = 0;
-        
     }
 
     ngAfterViewInit(): void {
-        this.socket = new WebSocket("ws://" + getBaseUrl().replace("http://","")+"ws");
+        this.socket = new WebSocket(`ws://${window.location.host}/ws`);
         this.socket.onopen = (event: any) => {
             console.log("socket opened");
             this.sendPositionData();
@@ -88,7 +87,6 @@ export class PlayerComponent implements AfterViewInit  {
                 this.y4 = json[4].y;
             }
             
-            console.log("recv data x: "+json[0].x);
         };
 
         this.socket.onclose = (event: any) => {
