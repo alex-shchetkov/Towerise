@@ -67,26 +67,22 @@ export class PlayerComponent implements AfterViewInit  {
             console.log("got data");
             var json = JSON.parse(event.data);
             if (json[0] != undefined) {
-                this.x = json[0].x;
-                this.y = json[0].y;
+                this.x1 = json[0].x;
+                this.y1 = json[0].y;
             }
             if (json[1] != undefined) {
-                this.x1 = json[1].x;
-                this.y1 = json[1].y;
+                this.x2 = json[1].x;
+                this.y2 = json[1].y;
             }
             if (json[2] != undefined) {
-                this.x2 = json[2].x;
-                this.y2 = json[2].y;
+                this.x3 = json[2].x;
+                this.y3 = json[2].y;
             }
             if (json[3] != undefined) {
-                this.x3 = json[3].x;
-                this.y3 = json[3].y;
+                this.x4 = json[3].x;
+                this.y4 = json[3].y;
             }
-            if (json[4] != undefined) {
-                this.x4 = json[4].x;
-                this.y4 = json[4].y;
-            }
-
+            this.sendPositionData();
             
             
         };
@@ -114,9 +110,9 @@ export class PlayerComponent implements AfterViewInit  {
         if (key.toUpperCase() === Directions.DOWN)
             this.movements.y = this.RATE;
         console.log('here');
-        this.tX += this.movements.x;
-        this.tY += this.movements.y;
-        this.sendPositionData();
+        this.x += this.movements.x;
+        this.y += this.movements.y;
+        //this.sendPositionData();
     }
 
     public sendPositionData() {
@@ -124,8 +120,8 @@ export class PlayerComponent implements AfterViewInit  {
             alert("socket not connected");
         }
         var data = JSON.stringify({
-            x: this.tX,
-            y: this.tY
+            x: this.x,
+            y: this.y
         });
         this.socket.send(data);
         

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -35,6 +36,7 @@ namespace Backend
             var playerPosition = JsonConvert.DeserializeObject<Player>(str);
             player.x = playerPosition.x;
             player.y = playerPosition.y;
+            
             Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await SendWorldState((Player)p); }));
             t.Start(player);
 
@@ -65,7 +67,9 @@ namespace Backend
 
             while (!webSocket.CloseStatus.HasValue)
             {
-                var currentGameState = JsonConvert.SerializeObject(playerList);
+                var tempPlayerList = new Player[10];
+                playerList.CopyTo(tempPlayerList);
+                var currentGameState = JsonConvert.SerializeObject(tempPlayerList.Where(p => p != player));
                 var bytes = Encoding.UTF8.GetBytes(currentGameState);
                 try
                 {
