@@ -76,7 +76,7 @@ namespace Backend
                     break;
                 }
                 
-                Thread.Sleep(250);
+                //Thread.Sleep(250);
             }
             playerList.Remove(player);
         }
