@@ -33,6 +33,7 @@ namespace Backend
             var buffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             var str = System.Text.Encoding.Default.GetString(buffer);
+            
             var playerPosition = JsonConvert.DeserializeObject<Player>(str);
             player.x = playerPosition.x;
             player.y = playerPosition.y;
@@ -53,7 +54,14 @@ namespace Backend
                 
 
                 str = System.Text.Encoding.Default.GetString(buffer);
-                playerPosition = JsonConvert.DeserializeObject<Player>(str);
+                try
+                {
+                    playerPosition = JsonConvert.DeserializeObject<Player>(str);
+                }
+                catch (Exception e)
+                {
+                    //eat it
+                }
                 player.x = playerPosition.x;
                 player.y = playerPosition.y;
             }
