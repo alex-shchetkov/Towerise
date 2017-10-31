@@ -57,14 +57,14 @@ export class PlayerComponent implements AfterViewInit  {
     ngAfterViewInit(): void {
         this.socket = new WebSocket(`ws://${window.location.host}/ws`);
         this.socket.onopen = (event: any) => {
-            console.log("socket opened");
+            console.log("socket opened on " + `ws://${window.location.host}/ws`);
             this.sendPositionData();
             
         };
         
 
         this.socket.onmessage = (event: any) => {
-            
+            console.log("got data");
             var json = JSON.parse(event.data);
             if (json[0] != undefined) {
                 this.x = json[0].x;
@@ -86,6 +86,8 @@ export class PlayerComponent implements AfterViewInit  {
                 this.x4 = json[4].x;
                 this.y4 = json[4].y;
             }
+
+            
             
         };
 
@@ -121,13 +123,12 @@ export class PlayerComponent implements AfterViewInit  {
         if (!this.socket || this.socket.readyState != WebSocket.OPEN) {
             alert("socket not connected");
         }
-
         var data = JSON.stringify({
             x: this.tX,
             y: this.tY
         });
         this.socket.send(data);
-        console.log("data sent x: " + this.tX); 
+        
     }
 
     public keyUpHandler(key: string) {
