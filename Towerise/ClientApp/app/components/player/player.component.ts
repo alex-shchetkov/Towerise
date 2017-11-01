@@ -1,10 +1,5 @@
-﻿import { Component, AfterViewInit } from '@angular/core';
+﻿import { Component, AfterViewInit, HostListener } from '@angular/core';
 import { getBaseUrl } from "../../app.module.browser";
-
-class Movements {
-    x: number;
-    y: number;
-};
 
 class Position {
     public x: number;
@@ -23,13 +18,15 @@ class Directions {
     templateUrl: './player.component.html',
     styleUrls: ['./player.component.css']
 })
-export class PlayerComponent implements AfterViewInit  {
+export class PlayerComponent implements AfterViewInit {
 
     public playerX: number;
     public playerY: number;
-
+    private mouseX: number;
+    private mouseY: number;
     public playerPosition: Position;
-
+    private readonly velocity = 0.075;
+    private loopStarted = false;
     public opponentPositions = new Array<Position>();
 
     public opponentCount = 4;
@@ -40,17 +37,15 @@ export class PlayerComponent implements AfterViewInit  {
         'black',
         'purple'
     ];
-    
+
     public tX: number;
     public tY: number;
-    private readonly RATE: number = 10;
-    private movements = new Movements();
     private socket: WebSocket;
 
     constructor() {
 
-        this.playerX = window.innerWidth / 2;
-        this.playerY = window.innerHeight / 2;
+        this.playerX = this.mouseX = window.innerWidth / 2;
+        this.playerY = this.mouseY = window.innerHeight / 2;
 
         for (let i = 0; i < this.opponentCount; i++) {
             this.opponentPositions.push({ x: 0, y: 0 });
@@ -58,8 +53,19 @@ export class PlayerComponent implements AfterViewInit  {
 
         this.tX = 75;
         this.tY = 75;
-        this.movements.x = 0;
-        this.movements.y = 0;
+    }
+
+    private updatePositionLoop() {
+        this.loopStarted = true;
+            setTimeout(() => {
+                let diffX = this.mouseX - this.playerX;
+                let diffY = this.mouseY - this.playerY;
+                let distance = Math.sqrt(Math.abs(diffX * 2) + Math.abs(diffY * 2));
+                this.playerX += (diffX * this.velocity);
+                this.playerY += (diffY * this.velocity);
+                this.updatePositionLoop();
+            }, 17);
+        
     }
 
     ngAfterViewInit(): void {
@@ -67,14 +73,14 @@ export class PlayerComponent implements AfterViewInit  {
         this.socket.onopen = (event: any) => {
             console.log("socket opened on " + `ws://${window.location.host}/ws`);
             this.sendPositionData();
-            
+
         };
-        
+
         this.socket.onmessage = (event: any) => {
             //console.log("got data");
-            
+
             var json = JSON.parse(event.data);
-            for (let i = 0; i < this.opponentCount; i++){
+            for (let i = 0; i < this.opponentCount; i++) {
                 let updatedOpponent = json[i];
                 if (json[i] != undefined) {
                     this.opponentPositions[i].x = updatedOpponent.x;
@@ -96,20 +102,18 @@ export class PlayerComponent implements AfterViewInit  {
         //this.socket.onopen = (ev:Event)=> alert("connection Opened");
     }
 
-    public keyDownHandler(key: string) {
-        if (key.toUpperCase() === Directions.RIGHT)
-            this.movements.x = this.RATE;
-        if (key.toUpperCase() === Directions.LEFT)
-            this.movements.x = -this.RATE;
-        if (key.toUpperCase() === Directions.UP)
-            this.movements.y = -this.RATE;
-        if (key.toUpperCase() === Directions.DOWN)
-            this.movements.y = this.RATE;
-        console.log('here');
-        this.playerX += this.movements.x;
-        this.playerY += this.movements.y;
-        //this.sendPositionData();
+    /**
+     * Sets mouse position for player to move towards
+     * @param event MouseEvent
+     */
+    @HostListener('mousemove', ['$event'])
+    onMouseMove(event: MouseEvent) {
+        this.mouseX = event.clientX;
+        this.mouseY = event.clientY;
+        if(!this.loopStarted)
+            this.updatePositionLoop();
     }
+
 
     public sendPositionData() {
         if (!this.socket || this.socket.readyState != WebSocket.OPEN) {
@@ -120,17 +124,7 @@ export class PlayerComponent implements AfterViewInit  {
             y: this.playerY
         });
         this.socket.send(data);
-        
+
     }
 
-    public keyUpHandler(key: string) {
-
-        if ([Directions.UP, Directions.DOWN].indexOf(key.toUpperCase()) !== -1) {
-            this.movements.y = 0;
-        }
-        if ([Directions.LEFT, Directions.RIGHT].indexOf(key.toUpperCase()) !== -1) {
-            this.movements.x = 0;
-        }
-        
-    }
 }
