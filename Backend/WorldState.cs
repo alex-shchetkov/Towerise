@@ -77,7 +77,11 @@ namespace Backend
             {
                 var tempPlayerList = new Player[10];
                 playerList.CopyTo(tempPlayerList);
-                var currentGameState = JsonConvert.SerializeObject(tempPlayerList.Where(p => p != player));
+                var currentGameState = JsonConvert.SerializeObject(
+                    tempPlayerList
+                    .Where(p => p != player && p != null)
+                    .Select(p => new { x = p.x, y=p.y })
+                );
                 var bytes = Encoding.UTF8.GetBytes(currentGameState);
                 try
                 {
