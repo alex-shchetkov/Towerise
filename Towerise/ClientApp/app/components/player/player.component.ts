@@ -6,6 +6,11 @@ class Movements {
     y: number;
 };
 
+class Position {
+    public x: number;
+    public y: number;
+}
+
 class Directions {
     public static readonly UP = 'W';
     public static readonly DOWN = 'S';
@@ -19,18 +24,23 @@ class Directions {
     styleUrls: ['./player.component.css']
 })
 export class PlayerComponent implements AfterViewInit  {
-    
 
-    public x: number;
-    public y: number;
-    public x1: number;
-    public y1: number;
-    public x2: number;
-    public y2: number;
-    public x3: number;
-    public y3: number;
-    public x4: number;
-    public y4: number;
+    public playerX: number;
+    public playerY: number;
+
+    public playerPosition: Position;
+
+    public opponentPositions = new Array<Position>();
+
+    public opponentCount = 4;
+
+    public opponentColors = [
+        'blue',
+        'red',
+        'black',
+        'purple'
+    ];
+    
     public tX: number;
     public tY: number;
     private readonly RATE: number = 10;
@@ -38,16 +48,14 @@ export class PlayerComponent implements AfterViewInit  {
     private socket: WebSocket;
 
     constructor() {
-        this.x = 75;
-        this.y = 75;
-        this.x1 = 0;
-        this.y1 = 0;
-        this.x2 = 0;
-        this.y2 = 0;
-        this.x3 = 0;
-        this.y3 = 0;
-        this.x4 = 0;
-        this.y4 = 0;
+
+        this.playerX = window.innerWidth / 2;
+        this.playerY = window.innerHeight / 2;
+
+        for (let i = 0; i < this.opponentCount; i++) {
+            this.opponentPositions.push({ x: 0, y: 0 });
+        }
+
         this.tX = 75;
         this.tY = 75;
         this.movements.x = 0;
@@ -62,29 +70,19 @@ export class PlayerComponent implements AfterViewInit  {
             
         };
         
-
         this.socket.onmessage = (event: any) => {
-            console.log("got data");
+            //console.log("got data");
+            
             var json = JSON.parse(event.data);
-            if (json[0] != undefined) {
-                this.x1 = json[0].x;
-                this.y1 = json[0].y;
+            for (let i = 0; i < this.opponentCount; i++){
+                let updatedOpponent = json[i];
+                if (json[i] != undefined) {
+                    this.opponentPositions[i].x = updatedOpponent.x;
+                    this.opponentPositions[i].y = updatedOpponent.y;
+                }
             }
-            if (json[1] != undefined) {
-                this.x2 = json[1].x;
-                this.y2 = json[1].y;
-            }
-            if (json[2] != undefined) {
-                this.x3 = json[2].x;
-                this.y3 = json[2].y;
-            }
-            if (json[3] != undefined) {
-                this.x4 = json[3].x;
-                this.y4 = json[3].y;
-            }
+
             this.sendPositionData();
-            
-            
         };
 
         this.socket.onclose = (event: any) => {
@@ -98,8 +96,6 @@ export class PlayerComponent implements AfterViewInit  {
         //this.socket.onopen = (ev:Event)=> alert("connection Opened");
     }
 
-
-
     public keyDownHandler(key: string) {
         if (key.toUpperCase() === Directions.RIGHT)
             this.movements.x = this.RATE;
@@ -110,8 +106,8 @@ export class PlayerComponent implements AfterViewInit  {
         if (key.toUpperCase() === Directions.DOWN)
             this.movements.y = this.RATE;
         console.log('here');
-        this.x += this.movements.x;
-        this.y += this.movements.y;
+        this.playerX += this.movements.x;
+        this.playerY += this.movements.y;
         //this.sendPositionData();
     }
 
@@ -120,8 +116,8 @@ export class PlayerComponent implements AfterViewInit  {
             alert("socket not connected");
         }
         var data = JSON.stringify({
-            x: this.x,
-            y: this.y
+            x: this.playerX,
+            y: this.playerY
         });
         this.socket.send(data);
         

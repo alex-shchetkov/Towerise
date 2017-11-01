@@ -1,8 +1,5 @@
 ﻿<span (window:keydown)="keyDownHandler($event.key)" (window:keyup)="keyUpHandler($event.key)"></span>
 <svg width="100%" height="auto">
-    <circle [attr.cx]="x" [attr.cy]="y" r="40" stroke="green" stroke-width="4" fill="yellow" />
-    <circle [attr.cx]="x1" [attr.cy]="y1" r="40" stroke="green" stroke-width="4" fill="blue" />
-    <circle [attr.cx]="x2" [attr.cy]="y2" r="40" stroke="green" stroke-width="4" fill="red" />
-    <circle [attr.cx]="x3" [attr.cy]="y3" r="40" stroke="green" stroke-width="4" fill="black" />
-    <circle [attr.cx]="x4" [attr.cy]="y4" r="40" stroke="green" stroke-width="4" fill="purple" />
+    <circle [attr.cx]="playerX" [attr.cy]="playerY" r="40" stroke="green" stroke-width="4" fill="yellow" />
+    <circle *ngFor="let opponent of opponentPositions; let i = index" [attr.cx]="opponent.x" [attr.cy]="opponent.y" r="40" stroke="green" stroke-width="4" [attr.fill]="opponentColors[i]" />
 </svg>
