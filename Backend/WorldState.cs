@@ -31,6 +31,7 @@ namespace Backend
             WebSocket webSocket = player.Socket;
 
             var buffer = new byte[1024 * 4];
+            var cleaningBuffer = new byte[1024 * 4];
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             var str = System.Text.Encoding.Default.GetString(buffer);
             
@@ -64,6 +65,7 @@ namespace Backend
                 }
                 player.x = playerPosition.x;
                 player.y = playerPosition.y;
+                cleaningBuffer.CopyTo(buffer, 0);
             }
             //await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             
