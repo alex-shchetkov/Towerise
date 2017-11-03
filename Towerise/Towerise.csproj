@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Backend\Backend.csproj" />
+    <ProjectReference Include="..\BusinessServices\BusinessServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>
