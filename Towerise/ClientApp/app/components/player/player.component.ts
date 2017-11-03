@@ -76,9 +76,9 @@ export class PlayerComponent implements AfterViewInit  {
             var json = JSON.parse(event.data);
             for (let i = 0; i < this.opponentCount; i++){
                 let updatedOpponent = json[i];
-                if (json[i] != undefined) {
-                    this.opponentPositions[i].x = updatedOpponent.x;
-                    this.opponentPositions[i].y = updatedOpponent.y;
+                if (updatedOpponent != undefined) {
+                    this.opponentPositions[i].x = updatedOpponent.X;
+                    this.opponentPositions[i].y = updatedOpponent.Y;
                 }
             }
 

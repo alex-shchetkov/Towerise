@@ -12,17 +12,20 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 using System.Threading;
 using Backend;
+using BusinessServices;
 
 namespace Towerise
 {
     public class Startup
     {
-        private WorldState worldState;
+        private WorldState _worldState;
+        private ConnectionManager _connectionManager;
 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            worldState = new WorldState();
+            _worldState = new WorldState();
+            _connectionManager = new ConnectionManager();
         }
 
         public IConfiguration Configuration { get; }
@@ -54,7 +57,7 @@ namespace Towerise
                 {
 
                     WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await worldState.AddPlayer(webSocket);
+                    await _connectionManager.NewConnection(webSocket);
                     
                 }
                 else
