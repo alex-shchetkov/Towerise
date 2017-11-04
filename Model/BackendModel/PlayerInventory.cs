@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Backend
+namespace Model.BackendModel
 {
     
     public class PlayerInventory

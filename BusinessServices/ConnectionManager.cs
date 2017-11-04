@@ -1,98 +1,86 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Backend;
+using BusinessServices.NetworkModel;
+using Model.BackendModel;
+using Model.NetworkModel;
 using Newtonsoft.Json;
 
 namespace BusinessServices
 {
     public class ConnectionManager
     {
+        public ConnectionManager(WorldState world)
+        {
+            world.WorldUpdated += World_WorldUpdated;
+        }
 
+        private void World_WorldUpdated(object sender, EventArgs e)
+        {
+            var listOfPlayersToNotify = (List<Player>) sender;
+
+            UpdatePlayers(listOfPlayersToNotify);
+
+        }
 
         public async Task NewConnection(WebSocket socket)
         {
             
-            var newPlayer = WorldState.Instance.AddPlayer();
+
+            //Receive The first message from client, like a name, and send back a guid
+            var newPlayer = await GetPlayerInfo(socket);
 
 
-            await Echo(newPlayer, socket);
+            //Begin worldstate exchange with player
+            await SendInitialWorldState(socket, newPlayer);
+
+            await ListenForPlayerActions(socket, newPlayer);
+
+            //await Echo(newPlayer, socket);
 
         }
 
+        private async Task<Player> GetPlayerInfo(WebSocket socket)
+        {
+            var newPlayerHandshake = await socket.GetData<PlayerHandshake>();
+            
+            newPlayerHandshake.PlayerConnectionId = Guid.NewGuid();
+            newPlayerHandshake.Socket = socket;
 
-        private async Task Echo(Player player, WebSocket webSocket)
+            //await socket.SendData(newPlayerHandshake);
+
+            //handshake successful, create the player
+            return WorldState.Instance.AddPlayer(newPlayerHandshake);
+            
+        }
+
+
+        private async Task SendInitialWorldState(WebSocket socket, Player player)
+        {
+            await socket.SendData(player.CurrentCell.AdjacentCells);
+        }
+
+        private async Task ListenForPlayerActions(WebSocket socket, Player player)
         {
 
-            var buffer = new byte[1024 * 4];
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            var str = System.Text.Encoding.Default.GetString(buffer);
-
-            var playerPosition = JsonConvert.DeserializeObject<Player>(str);
-            player.X = playerPosition.X;
-            player.Y = playerPosition.Y;
-
-            Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await SendWorldState((Player)p, webSocket); }));
-            t.Start(player);
-
-            while (!result.CloseStatus.HasValue)
-            {
-                try
-                {
-                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                }
-                catch (Exception e)
-                {
-                    break;
-                }
-
-
-                str = System.Text.Encoding.Default.GetString(buffer);
-                try
-                {
-                    playerPosition = JsonConvert.DeserializeObject<Player>(str);
-                }
-                catch (Exception e)
-                {
-                    //eat it
-                }
-                player.X = playerPosition.X;
-                player.Y = playerPosition.Y;
-            }
-            //await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-
+            var action = await socket.GetData<PlayerAction>();
+            action.Player = player;
+            WorldState.ProcessAction(action);
         }
 
-        private async Task SendWorldState(Player player, WebSocket webSocket)
+        public void UpdatePlayers(List<Player> playersToUpdate)
         {
-
-            while (!webSocket.CloseStatus.HasValue)
+            var tasks = new List<Task>();
+            foreach (var player in playersToUpdate)
             {
-                var tempList = new Player[WorldState.Instance.PlayerList.Count];
-                WorldState.Instance.PlayerList.CopyTo(tempList);
-
-                var currentGameState = JsonConvert.SerializeObject(tempList.Where(p=>p!=player));
-                var bytes = Encoding.UTF8.GetBytes(currentGameState);
-                try
-                {
-                    await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
-                }
-                catch (Exception e)
-                {
-                    break;
-                }
-
-                Thread.Sleep(15);
+                tasks.Add(player.Socket.SendData(player.CurrentCell.AdjacentCells));
             }
-            WorldState.Instance.PlayerList.Remove(player);
+            Task.WaitAll(tasks.ToArray());
         }
-
-
-
-
-
     }
 }

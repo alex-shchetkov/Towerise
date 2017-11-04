@@ -66,6 +66,7 @@ export class PlayerComponent implements AfterViewInit  {
         this.socket = new WebSocket(`ws://${window.location.host}/ws`);
         this.socket.onopen = (event: any) => {
             console.log("socket opened on " + `ws://${window.location.host}/ws`);
+            this.sendHandshake();
             this.sendPositionData();
             
         };
@@ -74,6 +75,18 @@ export class PlayerComponent implements AfterViewInit  {
             //console.log("got data");
             
             var json = JSON.parse(event.data);
+            for (let x = 0; x < 3; x++) {
+                for (let y = 0; y < 3; y++) {
+                    for (let i = 0; i < json.length; i++) {
+                        if (json[i].X === x && json[i].y === y) {
+                            for (let e = 0; e < json[i].Entities.length; e++) {
+                                
+                            }
+                        }
+                    }
+                }
+            }
+
             for (let i = 0; i < this.opponentCount; i++){
                 let updatedOpponent = json[i];
                 if (updatedOpponent != undefined) {
@@ -121,6 +134,19 @@ export class PlayerComponent implements AfterViewInit  {
         });
         this.socket.send(data);
         
+    }
+
+    public sendHandshake() {
+        if (!this.socket || this.socket.readyState != WebSocket.OPEN) {
+            alert("socket not connected");
+        }
+
+
+        var data = JSON.stringify({
+            Name: "random"
+        });
+        this.socket.send(data);
+
     }
 
     public keyUpHandler(key: string) {
