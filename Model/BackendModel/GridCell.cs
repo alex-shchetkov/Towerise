@@ -12,6 +12,13 @@ namespace Model.BackendModel
         /// coordinates of the cell within the grid
         /// </summary>
         public int X, Y;
+        public List<WorldEntity> Entities;
+
+
+        
+
+        [NonSerialized]public GridCell[] AdjacentCells;
+
 
 
         public event EventHandler CellUpdated;
@@ -21,13 +28,10 @@ namespace Model.BackendModel
             X = x;
             Y = y;
             _rand = new Random();
+            Entities = new List<WorldEntity>();
         }
 
-        public GridCell[] AdjacentCells;
 
-        public List<WorldEntity> Entities;
-
-        
 
         public Vector2 GetRandomCoordinate()
         {

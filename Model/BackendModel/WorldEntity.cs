@@ -6,13 +6,14 @@ namespace Model.BackendModel
     [Serializable]
     public class WorldEntity: Entity
     {
-        public GridCell CurrentCell;
+        [NonSerialized]public GridCell CurrentCell;
 
 
         public WorldEntity(GridCell cell, Vector2 initialCoords)
         {
             CurrentCell = cell;
             Coords = initialCoords;
+            cell.Entities.Add(this);
         }
 
         public void Move(Vector2 relativeMove)

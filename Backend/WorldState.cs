@@ -2,101 +2,156 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Numerics;
+using Backend.WorldGeneration;
+using BusinessServices.NetworkModel;
+using Model;
+using Model.BackendModel;
+using Model.NetworkModel;
+
 
 namespace Backend
 {
+    [Serializable]
     public class WorldState
     {
-        List<Player> playerList = new List<Player>();
+        public const int GridXSize = 3;
+        public const int GridYSize = 3;
 
+        private Random _rand;
 
-        public async Task AddPlayer(WebSocket socket)
+        public static WorldState Instance;
+
+        public List<Player> PlayerList;
+
+        public List<WorldEntity> WorldEntities;
+
+        public List<Item> Items { get; set; }
+
+        public GridCell[,] WorldGrid;
+
+        public EntityGenerator Generator;
+        public RockEntityGenerator RockGenerator;
+
+        public event EventHandler WorldUpdated;
+
+        public WorldState()
         {
-            var newPlayer = new Player(socket);
-            playerList.Add(newPlayer);
 
-            await Echo(newPlayer);
-           // Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await Echo((Player)p); }));
+            Instance = this;
+            PlayerList = new List<Player>();
+            Items = new List<Item>();
+            WorldEntities = new List<WorldEntity>();
+            Generator = new EntityGenerator(this);
+            RockGenerator = new RockEntityGenerator(this);
+            WorldGrid = new GridCell[GridXSize, GridYSize];
+            _rand = new Random();
+
+            
+
+            //initialize all cells
+            for (int i = 0; i < GridXSize; i++)
+            {
+                for (int n = 0; n < GridYSize; n++)
+                {
+                    WorldGrid[i,n] = new GridCell(i, n);
+                    WorldGrid[i,n].CellUpdated += WorldState_CellUpdated;
+                }
+            }
+
+            //specify neighbors
+            for (int i = 0; i < GridXSize; i++)
+            {
+                for (int n = 0; n < GridYSize; n++)
+                {
+                    var adjCellList = new List<GridCell>();
+                    //check adj cells
+                    for (int x = i - 1; x < i + 2&&x< GridXSize; x++)
+                    {
+                        for (int y = n - 1; y < n + 2 && y < GridYSize; y++)
+                        {
+                            //only skip out of bounds cells, we want to include the cell itself as well
+                            if (x<0||y<0)
+                            continue;
+
+                            adjCellList.Add(WorldGrid[x,y]);
+                        }
+                    }
+                    WorldGrid[i,n].AdjacentCells = adjCellList.ToArray();
+                }
+            }
+
+
+
+        }
+
+        private void WorldState_CellUpdated(object sender, EventArgs e)
+        {
+            var cell = (GridCell) sender;
+            var allEntities = new List<WorldEntity>();
+            for (int i = 0; i < cell.AdjacentCells.Length; i++)
+            {
+                allEntities.AddRange(cell.AdjacentCells[i].Entities);
+            }
+            var playersToNotify = allEntities.Where(en => en.GetType() == typeof(Player)).Cast<Player>().ToList();
+
+            OnWorldUpdated(playersToNotify);
+        }
+
+        public Player AddPlayer(PlayerHandshake info)
+        {
+            //make new player, put 'em in the middle of a random cell
+            var newPlayer = new Player(info, GetRandomGridCell(), new Vector2(GlobalConfigs.GridCellWidth/2, GlobalConfigs.GridCellHeight/2));
+
+
+
+            //spawn some more rocks as a result of a player joining
+            RockGenerator.CreateRandomRocks();
+
+            //and a couple more in the same cell as the player
+            RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
+
+            return newPlayer;
+            // Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await Echo((Player)p); }));
             //t.Start(newPlayer);
-            
+
         }
 
 
-        private async Task Echo(Player player)
+        
+
+        public void AddItem(Item newItem)
         {
-            WebSocket webSocket = player.Socket;
-
-            var buffer = new byte[1024 * 4];
-            var cleaningBuffer = new byte[1024 * 4];
-            WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            var str = System.Text.Encoding.Default.GetString(buffer);
-            
-            var playerPosition = JsonConvert.DeserializeObject<Player>(str);
-            player.x = playerPosition.x;
-            player.y = playerPosition.y;
-            
-            Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await SendWorldState((Player)p); }));
-            t.Start(player);
-
-            while (!result.CloseStatus.HasValue)
-            {
-                try
-                {
-                    result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                }
-                catch(Exception e)
-                {
-                    break;
-                }
-                
-
-                str = System.Text.Encoding.Default.GetString(buffer);
-                try
-                {
-                    playerPosition = JsonConvert.DeserializeObject<Player>(str);
-                }
-                catch (Exception e)
-                {
-                    //eat it
-                }
-                player.x = playerPosition.x;
-                player.y = playerPosition.y;
-                cleaningBuffer.CopyTo(buffer, 0);
-            }
-            //await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-            
+            Items.Add(newItem);
         }
 
-        private async Task SendWorldState(Player player)
-        {
-            WebSocket webSocket = player.Socket;
 
-            while (!webSocket.CloseStatus.HasValue)
+
+        public GridCell GetRandomGridCell()
+        {
+            return WorldGrid[_rand.Next(GridXSize),_rand.Next(GridYSize)];
+        }
+
+        public static void ProcessAction(PlayerAction action)
+        {
+            switch (action.Type)
             {
-                var tempPlayerList = new Player[10];
-                playerList.CopyTo(tempPlayerList);
-                var currentGameState = JsonConvert.SerializeObject(
-                    tempPlayerList
-                    .Where(p => p != player && p != null)
-                    .Select(p => new { x = p.x, y=p.y })
-                );
-                var bytes = Encoding.UTF8.GetBytes(currentGameState);
-                try
-                {
-                    await webSocket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
-                }
-                catch(Exception e)
-                {
+                case PlayerActionType.Move:
+                    action.Player.CurrentCell.MovePlayer(action.Player, action.Velocity);
                     break;
-                }
-                
-                Thread.Sleep(15);
+                case PlayerActionType.Punch:
+                    break;
+                case PlayerActionType.Throw:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-            playerList.Remove(player);
+        }
+
+
+        protected virtual void OnWorldUpdated(List<Player> affectedPlayers)
+        {
+            WorldUpdated?.Invoke(affectedPlayers, EventArgs.Empty);
         }
     }
 
