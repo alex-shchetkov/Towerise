@@ -8,7 +8,7 @@ namespace Model.BackendModel
     [Serializable]
     public class Player: WorldEntity
     {
-        public WebSocket Socket;
+        [NonSerialized]public WebSocket Socket;
 
         public Player(PlayerHandshake info, GridCell cell, Vector2 initialCoords) : base(cell, initialCoords)
         {

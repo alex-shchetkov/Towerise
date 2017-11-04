@@ -67,10 +67,13 @@ namespace BusinessServices
 
         private async Task ListenForPlayerActions(WebSocket socket, Player player)
         {
-
-            var action = await socket.GetData<PlayerAction>();
-            action.Player = player;
-            WorldState.ProcessAction(action);
+            while (!socket.CloseStatus.HasValue)
+            {
+                var action = await socket.GetData<PlayerAction>();
+                action.Player = player;
+                WorldState.ProcessAction(action);
+            }
+            
         }
 
         public void UpdatePlayers(List<Player> playersToUpdate)
