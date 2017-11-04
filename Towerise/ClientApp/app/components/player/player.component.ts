@@ -30,15 +30,15 @@ export class PlayerComponent implements AfterViewInit  {
     public mouseX: number;
     public mouseY: number;
     public playerPosition: Position;
-    private readonly velocity = 0.016;
-    private loopStarted = false;
-    private initialPositionSet = false;
+    public readonly velocity = 0.016;
+    public loopStarted = false;
+    public initialPositionSet = false;
     public opponentPositions = new Array<Position>();
     public transformMatrix: SVGMatrix;
-    private svgPoint: SVGPoint;
-    private socketConnectionStatus:string;
+    public svgPoint: SVGPoint;
+    public socketConnectionStatus:string;
 
-    private name:string;
+    public name:string;
 
     public viewBox = "";
 
@@ -67,7 +67,7 @@ export class PlayerComponent implements AfterViewInit  {
         'purple',
     ];
 
-    private socket: WebSocket;
+    public socket: WebSocket;
 
     constructor() {
         this.socketConnectionStatus = "red";
@@ -80,7 +80,7 @@ export class PlayerComponent implements AfterViewInit  {
         }*/
     }
 
-    private updatePositionLoop() {
+    public updatePositionLoop() {
         this.loopStarted = true;
         setTimeout(() => {
             let diffX = this.mouseX - this.playerX;
