@@ -22,12 +22,16 @@ export class PlayerComponent implements AfterViewInit {
 
     public playerX: number;
     public playerY: number;
-    private mouseX: number;
-    private mouseY: number;
+    public mouseX: number;
+    public mouseY: number;
     public playerPosition: Position;
-    private readonly velocity = 0.075;
+    private readonly velocity = 0.016;
     private loopStarted = false;
     public opponentPositions = new Array<Position>();
+    public transformMatrix: SVGMatrix;
+    private svgPoint: SVGPoint;
+
+    public viewBox = "";
 
     public opponentCount = 4;
 
@@ -38,34 +42,30 @@ export class PlayerComponent implements AfterViewInit {
         'purple'
     ];
 
-    public tX: number;
-    public tY: number;
     private socket: WebSocket;
 
     constructor() {
-
+  
         this.playerX = this.mouseX = window.innerWidth / 2;
         this.playerY = this.mouseY = window.innerHeight / 2;
+        this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
 
         for (let i = 0; i < this.opponentCount; i++) {
             this.opponentPositions.push({ x: 0, y: 0 });
         }
-
-        this.tX = 75;
-        this.tY = 75;
     }
 
     private updatePositionLoop() {
         this.loopStarted = true;
-            setTimeout(() => {
-                let diffX = this.mouseX - this.playerX;
-                let diffY = this.mouseY - this.playerY;
-                let distance = Math.sqrt(Math.abs(diffX * 2) + Math.abs(diffY * 2));
-                this.playerX += (diffX * this.velocity);
-                this.playerY += (diffY * this.velocity);
-                this.updatePositionLoop();
-            }, 17);
-        
+        setTimeout(() => {
+            let diffX = this.mouseX - this.playerX;
+            let diffY = this.mouseY - this.playerY;
+            this.playerX += Math.floor((diffX * this.velocity));
+            this.playerY += Math.floor((diffY * this.velocity));
+            this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+            this.updatePositionLoop();
+        }, 17);
+
     }
 
     ngAfterViewInit(): void {
@@ -108,9 +108,14 @@ export class PlayerComponent implements AfterViewInit {
      */
     @HostListener('mousemove', ['$event'])
     onMouseMove(event: MouseEvent) {
-        this.mouseX = event.clientX;
-        this.mouseY = event.clientY;
-        if(!this.loopStarted)
+        this.transformMatrix = (document.getElementsByTagName('svg')[0] as SVGSVGElement).getScreenCTM();
+        this.svgPoint = (document.getElementsByTagName('svg')[0] as SVGSVGElement).createSVGPoint();
+        this.svgPoint.x = event.clientX;
+        this.svgPoint.y = event.clientY;
+        this.svgPoint = this.svgPoint.matrixTransform(this.transformMatrix.inverse());
+        this.mouseX = this.svgPoint.x;
+        this.mouseY = this.svgPoint.y;
+        if (!this.loopStarted)
             this.updatePositionLoop();
     }
 
