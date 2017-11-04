@@ -25,7 +25,7 @@ namespace Towerise
         {
             Configuration = configuration;
             _worldState = new WorldState();
-            _connectionManager = new ConnectionManager();
+            _connectionManager = new ConnectionManager(_worldState);
         }
 
         public IConfiguration Configuration { get; }
