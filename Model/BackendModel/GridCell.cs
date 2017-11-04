@@ -12,6 +12,9 @@ namespace Model.BackendModel
         /// coordinates of the cell within the grid
         /// </summary>
         public int X, Y;
+
+        public List<Player> Players;
+
         public List<WorldEntity> Entities;
 
 
@@ -29,6 +32,7 @@ namespace Model.BackendModel
             Y = y;
             _rand = new Random();
             Entities = new List<WorldEntity>();
+            Players = new List<Player>();
         }
 
 
@@ -49,6 +53,26 @@ namespace Model.BackendModel
         protected virtual void OnCellUpdated()
         {
             CellUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void AddEntity(WorldEntity worldEntity)
+        {
+            if (worldEntity.GetType() == typeof(Player))
+            {
+                var playerEntity = (Player) worldEntity;
+                Players.Add(playerEntity);
+                playerEntity.PlayerDisconnected += PlayerEntity_PlayerDisconnected;
+            }
+            else
+            {
+                Entities.Add(worldEntity);
+            }
+        }
+
+        private void PlayerEntity_PlayerDisconnected(object sender, EventArgs e)
+        {
+            Players.Remove((Player)sender);
+            OnCellUpdated();
         }
     }
 }

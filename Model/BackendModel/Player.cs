@@ -9,6 +9,9 @@ namespace Model.BackendModel
     public class Player: WorldEntity
     {
         [NonSerialized]public WebSocket Socket;
+        
+        public event EventHandler PlayerDisconnected;
+
 
         public Player(PlayerHandshake info, GridCell cell, Vector2 initialCoords) : base(cell, initialCoords)
         {
@@ -25,6 +28,10 @@ namespace Model.BackendModel
 
 
         public Guid UniqueId;
-        
+
+        public virtual void OnPlayerDisconnected()
+        {
+            PlayerDisconnected?.Invoke(this, EventArgs.Empty);
+        }
     }
 }

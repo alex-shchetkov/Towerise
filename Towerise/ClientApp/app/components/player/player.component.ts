@@ -32,13 +32,17 @@ export class PlayerComponent implements AfterViewInit  {
     public playerPosition: Position;
     private readonly velocity = 0.016;
     private loopStarted = false;
+    private initialPositionSet = false;
     public opponentPositions = new Array<Position>();
     public transformMatrix: SVGMatrix;
     private svgPoint: SVGPoint;
+    private socketConnectionStatus:string;
+
+    private name:string;
 
     public viewBox = "";
 
-    public opponentCount = 4;
+    //public opponentCount = 4;
 
     public opponentColors = [
         'blue',
@@ -66,14 +70,14 @@ export class PlayerComponent implements AfterViewInit  {
     private socket: WebSocket;
 
     constructor() {
-  
+        this.socketConnectionStatus = "red";
         this.playerX = this.mouseX = window.innerWidth / 2;
         this.playerY = this.mouseY = window.innerHeight / 2;
         this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
 
-        for (let i = 0; i < this.opponentCount; i++) {
+        /*for (let i = 0; i < this.opponentCount; i++) {
             this.opponentPositions.push({ x: 0, y: 0 });
-        }
+        }*/
     }
 
     private updatePositionLoop() {
@@ -84,6 +88,7 @@ export class PlayerComponent implements AfterViewInit  {
             this.playerX += Math.floor((diffX * this.velocity));
             this.playerY += Math.floor((diffY * this.velocity));
             this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+            this.sendPositionData(Math.floor((diffX * this.velocity)), Math.floor((diffY * this.velocity)));
             this.updatePositionLoop();
         }, 17);
 
@@ -93,26 +98,45 @@ export class PlayerComponent implements AfterViewInit  {
         this.socket = new WebSocket(`ws://${window.location.host}/ws`);
         this.socket.onopen = (event: any) => {
             console.log("socket opened on " + `ws://${window.location.host}/ws`);
+            this.socketConnectionStatus = "green";
             this.sendHandshake();
             //this.sendPositionData();
         };
 
         this.socket.onmessage = (event: any) => {
+
+            
             //console.log("got data");
             var oppCount = 0;
             var json = JSON.parse(event.data);
+
+            if (!this.initialPositionSet) {
+                
+            }
+
             for (let x = 0; x < 3; x++) {
                 for (let y = 0; y < 3; y++) {
                     for (let i = 0; i < json.length; i++) {
                         if (json[i].X === x && json[i].Y === y) {
-                            for (let e = 0; e < json[i].Entities.length; e++) {
-                                if (oppCount < this.opponentCount) {
-                                    this.opponentPositions[oppCount].x = 100 * x + json[i].Entities[e].Coords.X*100;
-                                    this.opponentPositions[oppCount].y = 100 * y + json[i].Entities[e].Coords.Y * 100;
-                                    console.log("set " + oppCount + " to x:" + this.opponentPositions[oppCount].x);
-                                    console.log("set " + oppCount + " to y:" + this.opponentPositions[oppCount].y);
-                                    oppCount++;
-                                }
+                            for (let p = 0; p < json[i].Players.length; p++) {
+                                
+                                    if (json[i].Players[p].Name !== this.name) {
+                                        if (this.opponentPositions.length <= oppCount) {
+                                            this.opponentPositions.push({ x: 0, y: 0 });
+                                        }
+                                        this.opponentPositions[oppCount].x = 100 * x + json[i].Players[p].Coords.X;
+                                        this.opponentPositions[oppCount].y = 100 * y + json[i].Players[p].Coords.Y;
+                                        oppCount++;
+                                    } else {
+                                        if (!this.initialPositionSet) {
+                                            this.playerX = json[i].Players[p].Coords.X;
+                                            this.playerY = json[i].Players[p].Coords.Y;
+                                            this.initialPositionSet = true;
+                                            this.updatePositionLoop();
+                                        }
+                                    }
+                                    
+                                
                                 
                             }
                         }
@@ -124,7 +148,8 @@ export class PlayerComponent implements AfterViewInit  {
         
 
         this.socket.onclose = (event: any) => {
-            alert("connection closed for some reason");
+            this.socketConnectionStatus = "red";
+            //alert("connection closed for some reason");
         }
 
         this.socket.onerror = (event: any) => {
@@ -147,17 +172,22 @@ export class PlayerComponent implements AfterViewInit  {
         this.svgPoint = this.svgPoint.matrixTransform(this.transformMatrix.inverse());
         this.mouseX = this.svgPoint.x;
         this.mouseY = this.svgPoint.y;
-        if (!this.loopStarted)
-            this.updatePositionLoop();
+        
     }
-
+    socketClosedMessage : Boolean = false;
     public sendPositionData(diffX: number, diffY: number) {
         if (!this.socket || this.socket.readyState != WebSocket.OPEN) {
-            alert("socket not connected");
+            this.socketConnectionStatus = "red";
+            return;
         }
+
+        
         var data = JSON.stringify({
-            x: diffX,
-            y: diffY
+            Velocity:{
+                X: diffX,
+                Y: diffY
+            },
+            Type:0  //enum for movement 
         });
         this.socket.send(data);
         
@@ -165,14 +195,27 @@ export class PlayerComponent implements AfterViewInit  {
 
     public sendHandshake() {
         if (!this.socket || this.socket.readyState != WebSocket.OPEN) {
+            this.socketConnectionStatus = "red";
             alert("socket not connected");
         }
 
-
+        this.name = this.makeid();
         var data = JSON.stringify({
-            Name: "random"
+            Name: this.name
         });
+
+        //console.log("name: " + this.name);
         this.socket.send(data);
 
+    }
+
+    public makeid(): string {
+        var text = "";
+        var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+        for (var i = 0; i < 5; i++)
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+        console.log("generated name: " + text);
+        return text;
     }
 }

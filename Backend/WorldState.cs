@@ -88,37 +88,45 @@ namespace Backend
         private void WorldState_CellUpdated(object sender, EventArgs e)
         {
             var cell = (GridCell) sender;
-            var allEntities = new List<WorldEntity>();
+            var allAdjacentPlayers = new List<Player>();
             for (int i = 0; i < cell.AdjacentCells.Length; i++)
             {
-                allEntities.AddRange(cell.AdjacentCells[i].Entities);
+                allAdjacentPlayers.AddRange(cell.AdjacentCells[i].Players);
             }
-            var playersToNotify = allEntities.Where(en => en.GetType() == typeof(Player)).Cast<Player>().ToList();
 
-            OnWorldUpdated(playersToNotify);
+            OnWorldUpdated(allAdjacentPlayers);
         }
 
         public Player AddPlayer(PlayerHandshake info)
         {
             //make new player, put 'em in the middle of a random cell
-            var newPlayer = new Player(info, GetRandomGridCell(), new Vector2(GlobalConfigs.GridCellWidth/2, GlobalConfigs.GridCellHeight/2));
+            var newPlayer = new Player(info,
+                //GetRandomGridCell(), 
+                WorldGrid[0, 0],
+                new Vector2(GlobalConfigs.GridCellWidth/2, GlobalConfigs.GridCellHeight/2));
 
 
 
             //spawn some more rocks as a result of a player joining
-            RockGenerator.CreateRandomRocks();
+            //RockGenerator.CreateRandomRocks();
 
             //and a couple more in the same cell as the player
-            RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
+            //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
 
+            newPlayer.PlayerDisconnected += PlayerDisconnected;
             return newPlayer;
             // Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await Echo((Player)p); }));
             //t.Start(newPlayer);
 
         }
 
+        private void PlayerDisconnected(object sender, EventArgs e)
+        {
+            var disconnectedPlayer = (Player) sender;
 
-        
+            PlayerList.Remove(disconnectedPlayer);
+
+        }
 
         public void AddItem(Item newItem)
         {
@@ -153,6 +161,8 @@ namespace Backend
         {
             WorldUpdated?.Invoke(affectedPlayers, EventArgs.Empty);
         }
+
+        
     }
 
 }

@@ -13,7 +13,7 @@ namespace Model.BackendModel
         {
             CurrentCell = cell;
             Coords = initialCoords;
-            cell.Entities.Add(this);
+            cell.AddEntity(this);
         }
 
         public void Move(Vector2 relativeMove)
