@@ -67,19 +67,23 @@ export class PlayerComponent implements AfterViewInit  {
         this.socket.onopen = (event: any) => {
             console.log("socket opened on " + `ws://${window.location.host}/ws`);
             this.sendHandshake();
-            this.sendPositionData();
-            
+            //this.sendPositionData();
         };
         
         this.socket.onmessage = (event: any) => {
             //console.log("got data");
-            
+            var oppCount = 0;
             var json = JSON.parse(event.data);
             for (let x = 0; x < 3; x++) {
                 for (let y = 0; y < 3; y++) {
                     for (let i = 0; i < json.length; i++) {
                         if (json[i].X === x && json[i].y === y) {
                             for (let e = 0; e < json[i].Entities.length; e++) {
+                                if (oppCount < this.opponentCount) {
+                                    this.opponentPositions[oppCount].x = 10 * x + json[i].Entities[e].Coords.x;
+                                    this.opponentPositions[oppCount].y = 10 * y + json[i].Entities[e].Coords.y;
+                                    oppCount++;
+                                }
                                 
                             }
                         }

@@ -28,7 +28,7 @@ namespace Backend
 
         public List<Item> Items { get; set; }
 
-        public GridCell[][] WorldGrid;
+        public GridCell[,] WorldGrid;
 
         public EntityGenerator Generator;
         public RockEntityGenerator RockGenerator;
@@ -43,6 +43,9 @@ namespace Backend
             Items = new List<Item>();
             WorldEntities = new List<WorldEntity>();
             Generator = new EntityGenerator(this);
+            RockGenerator = new RockEntityGenerator(this);
+            WorldGrid = new GridCell[GridXSize, GridYSize];
+            _rand = new Random();
 
             
 
@@ -51,8 +54,8 @@ namespace Backend
             {
                 for (int n = 0; n < GridYSize; n++)
                 {
-                    WorldGrid[i][n] = new GridCell(i, n);
-                    WorldGrid[i][n].CellUpdated += WorldState_CellUpdated;
+                    WorldGrid[i,n] = new GridCell(i, n);
+                    WorldGrid[i,n].CellUpdated += WorldState_CellUpdated;
                 }
             }
 
@@ -71,10 +74,10 @@ namespace Backend
                             if (x<0||y<0)
                             continue;
 
-                            adjCellList.Add(WorldGrid[x][y]);
+                            adjCellList.Add(WorldGrid[x,y]);
                         }
                     }
-                    WorldGrid[i][n].AdjacentCells = adjCellList.ToArray();
+                    WorldGrid[i,n].AdjacentCells = adjCellList.ToArray();
                 }
             }
 
@@ -85,8 +88,13 @@ namespace Backend
         private void WorldState_CellUpdated(object sender, EventArgs e)
         {
             var cell = (GridCell) sender;
-            var playersToNotify =
-                (List<Player>)cell.AdjacentCells.SelectMany(c => c.Entities.Where(en => en.GetType() == typeof(Player)));
+            var allEntities = new List<WorldEntity>();
+            for (int i = 0; i < cell.AdjacentCells.Length; i++)
+            {
+                allEntities.AddRange(cell.AdjacentCells[i].Entities);
+            }
+            var playersToNotify = allEntities.Where(en => en.GetType() == typeof(Player)).Cast<Player>().ToList();
+
             OnWorldUpdated(playersToNotify);
         }
 
@@ -121,7 +129,7 @@ namespace Backend
 
         public GridCell GetRandomGridCell()
         {
-            return WorldGrid[_rand.Next(GridXSize)][_rand.Next(GridYSize)];
+            return WorldGrid[_rand.Next(GridXSize),_rand.Next(GridYSize)];
         }
 
         public static void ProcessAction(PlayerAction action)
