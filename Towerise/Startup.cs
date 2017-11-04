@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,17 +13,21 @@ using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
 using System.Threading;
 using Backend;
+using BusinessServices;
 
 namespace Towerise
 {
     public class Startup
     {
-        private WorldState worldState;
+        private WorldState _worldState;
+        private ConnectionManager _connectionManager;
 
         public Startup(IConfiguration configuration)
         {
+
             Configuration = configuration;
-            worldState = new WorldState();
+            _worldState = new WorldState();
+            _connectionManager = new ConnectionManager(_worldState);
         }
 
         public IConfiguration Configuration { get; }
@@ -36,6 +41,7 @@ namespace Towerise
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
                 ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -50,17 +56,26 @@ namespace Towerise
             app.UseWebSockets(webSocketOptions);
             app.Use(async (context, next) =>
             {
-                if (context.WebSockets.IsWebSocketRequest)
+                try
                 {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
 
-                    WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await worldState.AddPlayer(webSocket);
-                    
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        await _connectionManager.NewConnection(webSocket);
+                        //await Task.Factory.StartNew(async () => await _connectionManager.NewConnection(webSocket));
+
+                    }
+                    else
+                    {
+                        await next();
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    await next();
+                    Console.WriteLine("request exception: " + e.Message);
                 }
+                
             });
 
             if (env.IsDevelopment())
