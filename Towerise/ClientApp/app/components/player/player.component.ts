@@ -1,22 +1,35 @@
 ﻿import { Component, AfterViewInit, HostListener } from '@angular/core';
 import { getBaseUrl } from "../../app.module.browser";
 
-class Movements {
-    x: number;
-    y: number;
-};
-
-class Position {
+class Vector2 {
     public x: number;
     public y: number;
-}
 
-class Directions {
-    public static readonly UP = 'W';
-    public static readonly DOWN = 'S';
-    public static readonly LEFT = 'A';
-    public static readonly RIGHT = 'D';
-};
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public get magnitude() {
+        return Math.sqrt((this.x * this.x) + (this.y * this.y));
+    }
+
+    public normalize() {
+        return new Vector2((this.x / (this.magnitude || 1)), (this.y / (this.magnitude || 1)));
+    }
+
+    public mult(multiplicationVector: Vector2) {
+        return new Vector2(this.x * multiplicationVector.x, this.y * multiplicationVector.y);
+    }
+
+    public add(additionVector: Vector2) {
+        return new Vector2(this.x + additionVector.x, this.y + additionVector.y);
+    }
+
+    public sub(subtractionVector: Vector2) {
+        return new Vector2(this.x - subtractionVector.x, this.y - subtractionVector.y);
+    }
+}
 
 @Component({
     selector: 'player',
@@ -25,18 +38,17 @@ class Directions {
 })
 export class PlayerComponent implements AfterViewInit  {
 
-    public playerX: number;
-    public playerY: number;
-    public mouseX: number;
-    public mouseY: number;
-    public playerPosition: Position;
-    public readonly velocity = 0.016;
+    public mousePosition: Vector2;
+    public directionLine: Vector2;
+    public playerPosition: Vector2;
+    public velocity = new Vector2(5, 5);
     public loopStarted = false;
     public initialPositionSet = false;
-    public opponentPositions = new Array<Position>();
+    public opponentPositions = new Array<Vector2>();
     public transformMatrix: SVGMatrix;
     public svgPoint: SVGPoint;
-    public socketConnectionStatus:string;
+    public socketConnectionStatus: string;
+    public direction: Vector2;
 
     public name:string;
 
@@ -71,10 +83,10 @@ export class PlayerComponent implements AfterViewInit  {
 
     constructor() {
         this.socketConnectionStatus = "red";
-        this.playerX = this.mouseX = window.innerWidth / 2;
-        this.playerY = this.mouseY = window.innerHeight / 2;
-        this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
-
+        this.playerPosition = this.mousePosition = new Vector2(window.innerWidth / 2, window.innerHeight / 2);
+        this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+        this.direction = new Vector2(0, 0);
+        this.directionLine = this.direction;
         /*for (let i = 0; i < this.opponentCount; i++) {
             this.opponentPositions.push({ x: 0, y: 0 });
         }*/
@@ -83,12 +95,12 @@ export class PlayerComponent implements AfterViewInit  {
     public updatePositionLoop() {
         this.loopStarted = true;
         setTimeout(() => {
-            let diffX = this.mouseX - this.playerX;
-            let diffY = this.mouseY - this.playerY;
-            this.playerX += Math.floor((diffX * this.velocity));
-            this.playerY += Math.floor((diffY * this.velocity));
-            this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
-            this.sendPositionData(Math.floor((diffX * this.velocity)), Math.floor((diffY * this.velocity)));
+            let normal = this.direction.normalize();
+            let movement = normal.mult(this.velocity);
+            this.directionLine = this.playerPosition.add(movement.mult(this.velocity));
+            this.playerPosition = this.playerPosition.add(movement);
+            this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+            this.sendPositionData(movement.x, movement.y);
             this.updatePositionLoop();
         }, 17);
 
@@ -109,7 +121,6 @@ export class PlayerComponent implements AfterViewInit  {
             //console.log("got data");
             var oppCount = 0;
             var json = JSON.parse(event.data);
-
             if (!this.initialPositionSet) {
                 
             }
@@ -122,15 +133,15 @@ export class PlayerComponent implements AfterViewInit  {
                                 
                                     if (json[i].Players[p].Name !== this.name) {
                                         if (this.opponentPositions.length <= oppCount) {
-                                            this.opponentPositions.push({ x: 0, y: 0 });
+                                            this.opponentPositions.push(new Vector2(0, 0));
                                         }
                                         this.opponentPositions[oppCount].x = 100 * x + json[i].Players[p].Coords.X;
                                         this.opponentPositions[oppCount].y = 100 * y + json[i].Players[p].Coords.Y;
                                         oppCount++;
                                     } else {
                                         if (!this.initialPositionSet) {
-                                            this.playerX = json[i].Players[p].Coords.X;
-                                            this.playerY = json[i].Players[p].Coords.Y;
+                                            this.playerPosition.x = json[i].Players[p].Coords.X;
+                                            this.playerPosition.y = json[i].Players[p].Coords.Y;
                                             this.initialPositionSet = true;
                                             this.updatePositionLoop();
                                         }
@@ -170,9 +181,9 @@ export class PlayerComponent implements AfterViewInit  {
         this.svgPoint.x = event.clientX;
         this.svgPoint.y = event.clientY;
         this.svgPoint = this.svgPoint.matrixTransform(this.transformMatrix.inverse());
-        this.mouseX = this.svgPoint.x;
-        this.mouseY = this.svgPoint.y;
-        
+        this.mousePosition.x = this.svgPoint.x;
+        this.mousePosition.y = this.svgPoint.y;
+        this.direction = this.mousePosition.sub(this.playerPosition);
     }
     socketClosedMessage : Boolean = false;
     public sendPositionData(diffX: number, diffY: number) {

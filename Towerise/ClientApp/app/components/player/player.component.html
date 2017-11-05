@@ -1,7 +1,7 @@
 ﻿<svg width="100%" height="auto" [attr.viewBox]="viewBox">
-    <circle [attr.cx]="playerX" [attr.cy]="playerY" r="40" stroke="green" stroke-width="4" fill="yellow" />
-    <line [attr.x1]="playerX" [attr.y1]="playerY" [attr.x2]="mouseX" [attr.y2]="mouseY" stroke="black" stroke-width="2"></line>
-    <line [attr.x1]="playerX" [attr.y1]="playerY" [attr.x2]="0" [attr.y2]="0" stroke="yellow" stroke-width="1"></line>
+    <circle [attr.cx]="playerPosition.x" [attr.cy]="playerPosition.y" r="40" stroke="green" stroke-width="4" fill="yellow" />
+    <line [attr.x1]="playerPosition.x" [attr.y1]="playerPosition.y" [attr.x2]="directionLine.x" [attr.y2]="directionLine.y" stroke="black" stroke-width="2"></line>
+    <line [attr.x1]="playerPosition.x" [attr.y1]="playerPosition.y" [attr.x2]="0" [attr.y2]="0" stroke="yellow" stroke-width="1"></line>
     <circle *ngFor="let opponent of opponentPositions; let i = index" [attr.cx]="opponent.x" [attr.cy]="opponent.y" r="40" stroke="green" stroke-width="4" [attr.fill]="opponentColors[i]" />
     <rect x="0" y="0"  width="50" height="25" stroke="black" [attr.fill]="socketConnectionStatus"></rect>
 </svg>
