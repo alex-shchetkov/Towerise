@@ -30,6 +30,7 @@ export class PlayerComponent implements AfterViewInit  {
     public mouseX: number;
     public mouseY: number;
     public playerPosition: Position;
+
     public readonly velocity = 0.016;
     public loopStarted = false;
     public initialPositionSet = false;
@@ -74,10 +75,6 @@ export class PlayerComponent implements AfterViewInit  {
         this.playerX = this.mouseX = window.innerWidth / 2;
         this.playerY = this.mouseY = window.innerHeight / 2;
         this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
-
-        /*for (let i = 0; i < this.opponentCount; i++) {
-            this.opponentPositions.push({ x: 0, y: 0 });
-        }*/
     }
 
     public updatePositionLoop() {
@@ -88,6 +85,7 @@ export class PlayerComponent implements AfterViewInit  {
             this.playerX += Math.floor((diffX * this.velocity));
             this.playerY += Math.floor((diffY * this.velocity));
             this.viewBox = `${this.playerX - window.innerWidth / 2} ${this.playerY - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+
             this.sendPositionData(Math.floor((diffX * this.velocity)), Math.floor((diffY * this.velocity)));
             this.updatePositionLoop();
         }, 17);
@@ -172,7 +170,6 @@ export class PlayerComponent implements AfterViewInit  {
         this.svgPoint = this.svgPoint.matrixTransform(this.transformMatrix.inverse());
         this.mouseX = this.svgPoint.x;
         this.mouseY = this.svgPoint.y;
-        
     }
     socketClosedMessage : Boolean = false;
     public sendPositionData(diffX: number, diffY: number) {
