@@ -23,16 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ClientApp\app\components\game\game.component.ts" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Backend\Backend.csproj" />
     <ProjectReference Include="..\BusinessServices\BusinessServices.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\app\components\game\game.component.ts" />
   </ItemGroup>
 
   <Target Name="DebugRunWebpack" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('wwwroot\dist') ">
