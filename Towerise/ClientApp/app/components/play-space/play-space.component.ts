@@ -51,17 +51,18 @@ export class PlaySpaceComponent implements OnInit {
      */
     @HostListener('mousemove', ['$event'])
     onMouseMove(event: MouseEvent) {
+        let svg = (document.getElementsByTagName('play-space')[0].getElementsByTagName('svg')[0] as SVGSVGElement);
+        this.playerComponent.transformMatrix = (document.getElementsByTagName('play-space')[0].getElementsByTagName('svg')[0] as SVGSVGElement).getScreenCTM();
+        this.playerComponent.svgPoint = (document.getElementsByTagName('svg')[0] as SVGSVGElement).createSVGPoint();
+        this.playerComponent.svgPoint.x = event.clientX;
+        this.playerComponent.svgPoint.y = event.clientY;
+        this.playerComponent.svgPoint = this.playerComponent.svgPoint.matrixTransform(this.playerComponent.transformMatrix.inverse());
+        this.playerComponent.mousePosition.x = this.playerComponent.svgPoint.x;
+        this.playerComponent.mousePosition.y = this.playerComponent.svgPoint.y;
+        this.playerComponent.direction = this.playerComponent.mousePosition.sub(this.playerComponent.playerPosition);
         if (this.playerComponent.isMouseDown) {
 
-            let svg = (document.getElementsByTagName('play-space')[0].getElementsByTagName('svg')[0] as SVGSVGElement);
-            this.playerComponent.transformMatrix = (document.getElementsByTagName('play-space')[0].getElementsByTagName('svg')[0] as SVGSVGElement).getScreenCTM();
-            this.playerComponent.svgPoint = (document.getElementsByTagName('svg')[0] as SVGSVGElement).createSVGPoint();
-            this.playerComponent.svgPoint.x = event.clientX;
-            this.playerComponent.svgPoint.y = event.clientY;
-            this.playerComponent.svgPoint = this.playerComponent.svgPoint.matrixTransform(this.playerComponent.transformMatrix.inverse());
-            this.playerComponent.mousePosition.x = this.playerComponent.svgPoint.x;
-            this.playerComponent.mousePosition.y = this.playerComponent.svgPoint.y;
-            this.playerComponent.direction = this.playerComponent.mousePosition.sub(this.playerComponent.playerPosition);
+            
         }
     }
 

@@ -17,6 +17,8 @@ namespace BusinessServices
     {
         private WorldState _world;
         private SocketManager _socketManager;
+        private EventManager _eventManager;
+        private PlayerManager _playerManager;
 
         public ConnectionManager(WorldState world)
         {
@@ -24,6 +26,9 @@ namespace BusinessServices
             world.WorldUpdated += World_WorldUpdated;
 
             _socketManager = new SocketManager();
+            _eventManager = new EventManager(_socketManager);
+            _playerManager = new PlayerManager(_eventManager);
+
         }
 
         private void World_WorldUpdated(object sender, EventArgs e)
@@ -41,26 +46,19 @@ namespace BusinessServices
 
         public async Task NewConnection(WebSocket socket)
         {
-            Player newPlayer;
-            try
-            {
-
-                //Receive The first message from client, like a name, and send back a guid
-                newPlayer = await GetPlayerInfo(socket);
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("handshake failed" + e.Message);
-                return ;
-            }
-
+            var playerId = await GetPlayerInfo(socket);
 
             //Begin worldstate exchange with player
-            SendInitialWorldState(socket, newPlayer);
-
+            int breakout = 0;
+            while (_playerManager.GetPlayerById(playerId) == null)
+            {
+                Thread.Sleep(17);
+                breakout++;
+                if (breakout > 500) return;
+            }
             try
             {
-                await ListenForPlayerActions(socket, newPlayer);
+                await ListenForPlayerActions(socket, _playerManager.GetPlayerById(playerId));
             }
             catch (Exception e)
             {
@@ -72,7 +70,7 @@ namespace BusinessServices
 
         }
 
-        private async Task<Player> GetPlayerInfo(WebSocket socket)
+        private async Task<Guid> GetPlayerInfo(WebSocket socket)
         {
             var newPlayerHandshake = await socket.GetData<PlayerHandshake>();
             
@@ -84,8 +82,9 @@ namespace BusinessServices
             //await socket.SendData(newPlayerHandshake);
 
             //handshake successful, create the player
-            return WorldState.Instance.AddPlayer(newPlayerHandshake);
-            
+            _eventManager.AddEvent(()=>_playerManager.AddPlayer(newPlayerHandshake));
+
+            return newPlayerHandshake.PlayerConnectionId;
         }
 
 
@@ -112,21 +111,9 @@ namespace BusinessServices
                 {
                     var action = await socket.GetData<PlayerAction>();
                     action.Player = player;
-                    _world.ProcessAction(action);
+                    _eventManager.AddEvent(()=>_playerManager.ProcessPlayerAction(action));
+                    //_world.ProcessAction(action);
                 }
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
-                Console.WriteLine("***************** NEW STATUS: " + socket.State);
                 Console.WriteLine("***************** NEW STATUS: " + socket.State);
 
             }

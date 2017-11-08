@@ -17,6 +17,12 @@ namespace BusinessServices
             socket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
+        public static void SendData(this WebSocket socket, byte[] data)
+        {
+            if (data.Length > 4096) throw new Exception("message sent is too large");
+            socket.SendAsync(new ArraySegment<byte>(data, 0, data.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
         public static async Task<T> GetData<T>(this WebSocket socket)
         {
             string str = null;

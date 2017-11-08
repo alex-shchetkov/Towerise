@@ -19,7 +19,7 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
 
     public mousePosition: Vector2;
     private initialPositionSet: boolean;
-    private velocity = new Vector2(5, 5);
+    private velocity = new Vector2(1, 1);
     private loopStarted = false;
     public directionLine: Vector2;
     public playerPosition: Vector2;
@@ -42,17 +42,18 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
     public updatePositionLoop() {
         this.loopStarted = true;
         setTimeout(() => {
-            
+            let normal = this.direction.normalize();
+            let movement = normal.mult(this.velocity);
+            this.directionLine = this.playerPosition.add(movement.mult(this.velocity));
+            this.playerPosition = this.playerPosition.add(movement);
+            super.sendPositionData(movement.x, movement.y);
+            this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+            this.updatePositionLoop();
             if (this.isMouseDown) {
-                let normal = this.direction.normalize();
-                let movement = normal.mult(this.velocity);
-                this.directionLine = this.playerPosition.add(movement.mult(this.velocity));
-                this.playerPosition = this.playerPosition.add(movement);
-                this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
-                super.sendPositionData(movement.x, movement.y);
+                
             }
             
-            this.updatePositionLoop();
+            
             
         }, 17);
 

@@ -108,7 +108,6 @@ namespace Backend
             //and a couple more in the same cell as the player
             //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
             PlayerList.Add(newPlayer);
-            newPlayer.PlayerDisconnected += PlayerDisconnected;
             return newPlayer;
             // Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await Echo((Player)p); }));
             //t.Start(newPlayer);
