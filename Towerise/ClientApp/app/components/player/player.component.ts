@@ -13,6 +13,10 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
     public transformMatrix: SVGMatrix;
     public svgPoint: SVGPoint;
     public direction: Vector2;
+    
+
+    public name:string;
+
     public mousePosition: Vector2;
     private initialPositionSet: boolean;
     private velocity = new Vector2(5, 5);
@@ -31,16 +35,25 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
         this.directionLine = this.direction;
     }
 
+    
+
+    public isMouseDown: Boolean = false;
+
     public updatePositionLoop() {
         this.loopStarted = true;
         setTimeout(() => {
-            let normal = this.direction.normalize();
-            let movement = normal.mult(this.velocity);
-            this.directionLine = this.playerPosition.add(movement.mult(this.velocity));
-            this.playerPosition = this.playerPosition.add(movement);
-            this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
-            super.sendPositionData(movement.x, movement.y);
+            
+            if (this.isMouseDown) {
+                let normal = this.direction.normalize();
+                let movement = normal.mult(this.velocity);
+                this.directionLine = this.playerPosition.add(movement.mult(this.velocity));
+                this.playerPosition = this.playerPosition.add(movement);
+                this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+                super.sendPositionData(movement.x, movement.y);
+            }
+            
             this.updatePositionLoop();
+            
         }, 17);
 
     }
@@ -49,38 +62,29 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
         //console.log("got data");
         var oppCount = 0;
         var json = JSON.parse(event.data);
-        
-        for (let x = 0; x < 3; x++) {
-            for (let y = 0; y < 3; y++) {
-                for (let i = 0; i < json.length; i++) {
-                    if (json[i].X === x && json[i].Y === y) {
-                        for (let p = 0; p < json[i].Players.length; p++) {
-
-                            if (json[i].Players[p].Name !== this.name) {
-                                if (this.opponentPositionsRetrieved.length <= oppCount) {
-                                    this.opponentPositionsRetrieved.push(new Vector2(0, 0));
-                                }
-                                this.opponentPositionsRetrieved[oppCount].x = 100 * x + json[i].Players[p].Coords.X;
-                                this.opponentPositionsRetrieved[oppCount].y = 100 * y + json[i].Players[p].Coords.Y;
-                                oppCount++;
-                            } else {
-                                if (!this.initialPositionSet) {
-                                    this.playerPosition.x = json[i].Players[p].Coords.X;
-                                    this.playerPosition.y = json[i].Players[p].Coords.Y;
-                                    this.initialPositionSet = true;
-                                    this.updatePositionLoop();
-                                }
-                            }
 
 
+        for (let c = 0; c < json.length; c++) {
+            for (let p = 0; p < json[c].Players.length; p++) {
 
-                        }
+                if (json[c].Players[p].Name !== this.name) {
+                    if (this.opponentPositionsRetrieved.length <= oppCount) {
+                        this.opponentPositionsRetrieved.push(new Vector2(0, 0));
+                    }
+                    this.opponentPositionsRetrieved[oppCount].x = json[c].Players[p].Coords.X;
+                    this.opponentPositionsRetrieved[oppCount].y = json[c].Players[p].Coords.Y;
+                    oppCount++;
+                } else {
+                    if (!this.initialPositionSet) {
+                        this.playerPosition.x = json[c].Players[p].Coords.X;
+                        this.playerPosition.y = json[c].Players[p].Coords.Y;
+                        this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+                        this.initialPositionSet = true;
+
+                        this.updatePositionLoop();
                     }
                 }
             }
         }
-
         this.opponentPositions.emit(this.opponentPositionsRetrieved);
-    }
-
-}
+    }}

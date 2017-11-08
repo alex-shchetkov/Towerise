@@ -6,7 +6,7 @@ export abstract class SocketListener implements AfterViewInit {
 
     protected socket: WebSocket;
     protected socketClosedMessage: Boolean = false;
-    protected socketConnectionStatus: string;
+    public socketConnectionStatus: string;
     protected name: string;
 
     constructor() {
@@ -73,6 +73,7 @@ export abstract class SocketListener implements AfterViewInit {
     public onError(event: any) {
         console.log("socket error");
         console.log(event);
+        this.socketConnectionStatus = "red";
     }
 
     public sendPositionData(diffX: number, diffY: number) {

@@ -13,7 +13,7 @@ namespace Model.BackendModel
         public event EventHandler PlayerDisconnected;
 
 
-        public Player(PlayerHandshake info, GridCell cell, Vector2 initialCoords) : base(cell, initialCoords)
+        public Player(PlayerHandshake info, GridCell cell, Vector2 initialLocalCoords) : base(cell, initialLocalCoords)
         {
             UniqueId = info.PlayerConnectionId;
             Name = info.Name;

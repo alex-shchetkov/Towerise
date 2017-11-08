@@ -7,7 +7,7 @@ namespace Model.BackendModel
     /// </summary>
     public class Item:WorldEntity
     {
-        public Item(GridCell cell, Vector2 initialCoords):base(cell, initialCoords)
+        public Item(GridCell cell, Vector2 initialLocalCoords):base(cell, initialLocalCoords)
         {
             
         }

@@ -19,12 +19,17 @@ namespace BusinessServices
 
         public static async Task<T> GetData<T>(this WebSocket socket)
         {
+            string str = null;
             try
             {
                 var buffer = new byte[1024 * 4];
                 WebSocketReceiveResult result =
-                    await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                var str = System.Text.Encoding.Default.GetString(buffer);
+                    await socket.ReceiveAsync(new ArraySegment<byte>(buffer), new CancellationToken(false));
+                if (!result.EndOfMessage || result.CloseStatus.HasValue || result.CloseStatusDescription != null)
+                {
+                    Console.WriteLine("lets check it out");
+                }
+                str = System.Text.Encoding.Default.GetString(buffer);
                 return JsonConvert.DeserializeObject<T>(str);
             }
             catch(Exception e)

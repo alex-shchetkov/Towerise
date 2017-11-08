@@ -19,7 +19,7 @@ namespace Model.BackendModel
 
         public event EventHandler<EventArgs> OnDestroyed;
 
-        public Rock(GridCell cell, Vector2 initialCoord) : base(cell, initialCoord)
+        public Rock(GridCell cell, Vector2 initialLocalCoord) : base(cell, initialLocalCoord)
         {
             
         }

@@ -28,9 +28,14 @@ namespace BusinessServices
 
         private void World_WorldUpdated(object sender, EventArgs e)
         {
-            var listOfPlayersToNotify = (List<Player>) sender;
+            var cell = (GridCell)sender;
+            var allAdjacentPlayers = new List<Player>();
+            for (int i = 0; i < cell.AdjacentCells.Length; i++)
+            {
+                allAdjacentPlayers.AddRange(cell.AdjacentCells[i].Players);
+            }
 
-            UpdatePlayers(listOfPlayersToNotify);
+            UpdatePlayers(allAdjacentPlayers, cell);
 
         }
 
@@ -53,7 +58,15 @@ namespace BusinessServices
             //Begin worldstate exchange with player
             SendInitialWorldState(socket, newPlayer);
 
-            await ListenForPlayerActions(socket, newPlayer);
+            try
+            {
+                await ListenForPlayerActions(socket, newPlayer);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("******* error: "+e.StackTrace);
+            }
+            
 
             //await Echo(newPlayer, socket);
 
@@ -91,14 +104,31 @@ namespace BusinessServices
 
         private async Task ListenForPlayerActions(WebSocket socket, Player player)
         {
+
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
             try
             {
                 while (socket.State==WebSocketState.Open)
                 {
                     var action = await socket.GetData<PlayerAction>();
                     action.Player = player;
-                    WorldState.ProcessAction(action);
+                    _world.ProcessAction(action);
                 }
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+                Console.WriteLine("***************** NEW STATUS: " + socket.State);
+
             }
             catch (Exception e)
             {
@@ -109,15 +139,24 @@ namespace BusinessServices
             
         }
 
-        public void UpdatePlayers(List<Player> playersToUpdate)
+        private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Console.WriteLine("FINALLY FOUND IT");
+        }
+
+        public void UpdatePlayers(List<Player> playersToUpdate, GridCell cell)
         {
             try
             {
+                if (playersToUpdate.Count > 1)
+                {
+                    Console.WriteLine("more than 1 player");
+                }
                 var tasks = new List<Task>();
                 foreach (var player in playersToUpdate)
                 {
                     tasks.Add(Task.Factory.StartNew(() =>
-                        _socketManager.SendData(player, player.CurrentCell.AdjacentCells)));
+                        _socketManager.SendData(player, new []{cell})));
                 }
                 Task.WaitAll(tasks.ToArray());
             }
@@ -126,6 +165,11 @@ namespace BusinessServices
                 Console.WriteLine("exception in UpdatePlayers: " + e.Message);
                 
             }
+            
+        }
+
+        public void UpdateCellForAllNearbyPlayers(GridCell cell)
+        {
             
         }
         
