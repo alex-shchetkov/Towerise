@@ -32,7 +32,7 @@ namespace Backend
         public RockEntityGenerator RockGenerator;
 
         public event EventHandler WorldUpdated;
-
+        
         public WorldState()
         {
 
@@ -92,27 +92,6 @@ namespace Backend
             OnWorldUpdated((GridCell)sender);
         }
 
-        public Player AddPlayer(PlayerHandshake info)
-        {
-            //make new player, put 'em in the middle of a random cell
-            var newPlayer = new Player(info,
-                GetRandomGridCell(), 
-                //WorldGrid[0, 0],
-                new Vector2(GlobalConfigs.GridCellWidth/2, GlobalConfigs.GridCellHeight/2));
-
-
-
-            //spawn some more rocks as a result of a player joining
-            //RockGenerator.CreateRandomRocks();
-
-            //and a couple more in the same cell as the player
-            //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
-            PlayerList.Add(newPlayer);
-            return newPlayer;
-            // Thread t = new Thread(new ParameterizedThreadStart(async (p) => { await Echo((Player)p); }));
-            //t.Start(newPlayer);
-
-        }
 
         private void PlayerDisconnected(object sender, EventArgs e)
         {

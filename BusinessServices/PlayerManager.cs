@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Backend;
@@ -12,14 +13,24 @@ namespace BusinessServices
 {
     public class PlayerManager: Manager
     {
-        public ConcurrentDictionary<Guid, Player> Players;
+        public List<Player> Players;
         public EventManager _eventManager;
+
+        private string[] _playerColors = new string[]
+        {
+            "blue",
+            "red",
+            "black",
+            "purple"
+        };
+        public static PlayerManager Instance;
 
 
         public PlayerManager(EventManager eventManager)
         {
-            Players = new ConcurrentDictionary<Guid, Player>();
+            Players = new List<Player>();
             _eventManager = eventManager;
+            Instance = this;
         }
 
         public override void ProcessEvent(GameEvent cEvent)
@@ -33,30 +44,24 @@ namespace BusinessServices
             var newPlayer = new Player(info,
                 WorldState.Instance.GetRandomGridCell(),
                 //WorldGrid[0, 0],
-                new Vector2(GlobalConfigs.GridCellWidth / 2, GlobalConfigs.GridCellHeight / 2));
-
-
+                new Vector2(GlobalConfigs.GridCellWidth / 2, GlobalConfigs.GridCellHeight / 2),
+                _playerColors[info.Name.Min() % _playerColors.Length]);
 
             //spawn some more rocks as a result of a player joining
             //RockGenerator.CreateRandomRocks();
 
             //and a couple more in the same cell as the player
             //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
-            Players.TryAdd(newPlayer.UniqueId, newPlayer);
+            Players.Add(newPlayer);
 
-            _eventManager.AddRefreshEvent( newPlayer.CurrentCell.AdjacentCells, GetPlayersInRadius(newPlayer.Coords) );
+            //_eventManager.AddRefreshEvent( newPlayer.CurrentCell.AdjacentCells, GetPlayersInRadius(newPlayer.Coords) );
+            //_eventManager.AddEvent(()=>Players.Add(newPlayer));
             return newPlayer;
         }
 
         public Player[] GetPlayersInRadius(Vector2 coords)
         {
-            return Players.Values.Where(p => Vector2.Distance(p.Coords, coords) < 300).ToArray();
-        }
-
-        public Player GetPlayerById(Guid playerId)
-        {
-            Players.TryGetValue(playerId, out var retVal);
-            return retVal;
+            return Players.Where(p => Vector2.Distance(p.Coords, coords) < 300).ToArray();
         }
 
         public void ProcessPlayerAction(PlayerAction action)
@@ -126,17 +131,13 @@ namespace BusinessServices
                 player.CurrentCell = newCell;
                 oldCell.Players.Remove(player);
                 newCell.Players.Add(player);
-                _eventManager.AddRefreshEvent(oldCell.AdjacentCells.Union(newCell.AdjacentCells).ToArray(), GetPlayersInRadius(player.Coords));
+                //_eventManager.AddRefreshEvent(oldCell.AdjacentCells.Union(newCell.AdjacentCells).ToArray(), GetPlayersInRadius(player.Coords));
             }
             else
             {
-                _eventManager.AddRefreshEvent(oldCell.AdjacentCells, GetPlayersInRadius(player.Coords));
+               // _eventManager.AddRefreshEvent(oldCell.AdjacentCells, GetPlayersInRadius(player.Coords));
             }
             
-
-
-
-
         }
     }
 }

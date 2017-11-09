@@ -3,6 +3,7 @@ import { PlayerComponent } from "../player/player.component";
 import { OpponentsComponent } from "../opponents/opponents.component";
 import { Vector2 } from "../../shared/Vector2";
 import { GridLine } from "../../shared/GridLine";
+import { Opponent } from '../../shared/Opponent';
 
 @Component({
     selector: 'play-space',
@@ -24,7 +25,7 @@ export class PlaySpaceComponent implements OnInit {
     }
 
     public ngOnInit() {
-        this.playerComponent.opponentPositions.subscribe((positions: Array<Vector2>) => {
+        this.playerComponent.opponentPositions.subscribe((positions: Array<Opponent>) => {
 
             this.opponentsComponent.opponentPositions = positions;
 

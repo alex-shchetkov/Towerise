@@ -50,7 +50,7 @@ namespace BusinessServices
 
             //Begin worldstate exchange with player
             int breakout = 0;
-            while (_playerManager.GetPlayerById(playerId) == null)
+            while (_playerManager.Players.FirstOrDefault(p=>p.Socket==socket) == null)
             {
                 Thread.Sleep(17);
                 breakout++;
@@ -58,7 +58,7 @@ namespace BusinessServices
             }
             try
             {
-                await ListenForPlayerActions(socket, _playerManager.GetPlayerById(playerId));
+                await ListenForPlayerActions(socket, _playerManager.Players.FirstOrDefault(p => p.Socket == socket));
             }
             catch (Exception e)
             {

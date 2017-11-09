@@ -1,5 +1,6 @@
 ﻿import { Component, ViewChild } from '@angular/core';
 import { Vector2 } from "../../shared/Vector2";
+import { Opponent } from '../../shared/Opponent';
 
 @Component({
     selector: '[opponents]',
@@ -7,29 +8,6 @@ import { Vector2 } from "../../shared/Vector2";
 })
 export class OpponentsComponent {
 
-    public opponentColors = [
-        'blue',
-        'red',
-        'black',
-        'purple',
-        'blue',
-        'red',
-        'black',
-        'purple',
-        'blue',
-        'red',
-        'black',
-        'purple',
-        'blue',
-        'red',
-        'black',
-        'purple',
-        'blue',
-        'red',
-        'black',
-        'purple',
-    ];
-
-    public opponentPositions = new Array<Vector2>();
+    public opponentPositions = new Array<Opponent>();
 
 }

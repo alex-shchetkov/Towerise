@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +26,7 @@ namespace BusinessServices
             _socketManager = socketManager;
 
             Task.Factory.StartNew(BeginProcessingIncomingEvents);
-            Task.Factory.StartNew(BeginProcessingOutgoingEvents);
+            //Task.Factory.StartNew(BeginProcessingOutgoingEvents);
         }
 
         public void AddEvent(Action action)
@@ -57,8 +58,10 @@ namespace BusinessServices
                         if (cEvent != null)
                         {
                             cEvent.Invoke();
+                            
                         }
-                        else break;
+                        else continue;
+
                     }
                     catch (Exception e)
                     {
@@ -66,7 +69,9 @@ namespace BusinessServices
                         Console.WriteLine(e.StackTrace);
                     }
                 }
-                Thread.Sleep(17);
+                
+                RefreshAllPlayers();
+                Thread.Sleep(56);
             }
             
         }
@@ -79,13 +84,15 @@ namespace BusinessServices
                 {
                     try
                     {
-                        Action cEvent = null;
+                        /*Action cEvent = null;
                         OutgoingEvents.TryDequeue(out cEvent);
                         if (cEvent != null)
                         {
                             cEvent.Invoke();
                         }
-                        else break;
+                        else break;*/
+
+                        
                     }
                     catch (Exception e)
                     {
@@ -94,6 +101,25 @@ namespace BusinessServices
                     }
                 }
                 Thread.Sleep(17);
+            }
+
+        }
+
+        public void RefreshAllPlayers()
+        {
+            var tasks = new List<Task>();
+            //List<KeyValuePair<Player, byte[]>> listOfUpdates = new List<KeyValuePair<Player, byte[]>>();
+            if (PlayerManager.Instance.Players.Count==0) return;
+            foreach (var player in PlayerManager.Instance.Players)
+            {
+                if (player.Socket.State == WebSocketState.Open)
+                    tasks.Add(Task.Factory.StartNew(() =>
+                        player.Socket.SendData(
+                            Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(player.CurrentCell.AdjacentCells)))));
+                else
+                {
+                    AddEvent(() =>PlayerManager.Instance.Players.Remove(player));
+                }
             }
 
         }

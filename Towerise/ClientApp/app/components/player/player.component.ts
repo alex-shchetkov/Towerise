@@ -1,6 +1,7 @@
 ﻿import { Component, AfterViewInit, HostListener, EventEmitter } from '@angular/core';
 import { getBaseUrl } from "../../app.module.browser";
 import { Vector2 } from "../../shared/Vector2";
+import { Opponent } from '../../shared/Opponent';
 import { SocketListener } from '../../shared/SocketListener'; 
 
 @Component({
@@ -24,8 +25,8 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
     public directionLine: Vector2;
     public playerPosition: Vector2;
     public viewBox = "";
-    public opponentPositions = new EventEmitter<Array<Vector2>>();
-    private opponentPositionsRetrieved = new Array<Vector2>();
+    public opponentPositions = new EventEmitter<Array<Opponent>>();
+    private opponentPositionsRetrieved = new Array<Opponent>();
 
     constructor() {
         super();
@@ -70,10 +71,15 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
 
                 if (json[c].Players[p].Name !== this.name) {
                     if (this.opponentPositionsRetrieved.length <= oppCount) {
-                        this.opponentPositionsRetrieved.push(new Vector2(0, 0));
+                        let opp = new Opponent();
+                        opp.Position = new Vector2(0, 0);
+                        opp.Color = 'white';
+                        this.opponentPositionsRetrieved.push(opp);
                     }
-                    this.opponentPositionsRetrieved[oppCount].x = json[c].Players[p].Coords.X;
-                    this.opponentPositionsRetrieved[oppCount].y = json[c].Players[p].Coords.Y;
+                    let currentOpponent = this.opponentPositionsRetrieved[oppCount];
+                    currentOpponent.Position.x = json[c].Players[p].Coords.X;
+                    currentOpponent.Position.y = json[c].Players[p].Coords.Y;
+                    currentOpponent.Color = json[c].Players[p].Color;
                     oppCount++;
                 } else {
                     if (!this.initialPositionSet) {
