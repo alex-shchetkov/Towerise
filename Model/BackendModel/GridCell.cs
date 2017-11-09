@@ -19,12 +19,8 @@ namespace Model.BackendModel
 
         public List<WorldEntity> Entities;
 
-        
+        [NonSerialized] public GridCell[] AdjacentCells;
 
-
-        
-
-        [NonSerialized]public GridCell[] AdjacentCells;
         [NonSerialized] public GridCell LeftAdjCell, RightAdjCell, TopAdjCell, BottomAdjCell;
 
 

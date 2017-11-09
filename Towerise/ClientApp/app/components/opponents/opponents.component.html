@@ -1,1 +1,1 @@
-﻿<svg:circle *ngFor="let opponent of opponentPositions; let i = index" [attr.cx]="opponent.x" [attr.cy]="opponent.y" r="5" stroke="green" stroke-width="1" [attr.fill]="opponentColors[i]" />
+﻿<svg:circle *ngFor="let opponent of opponentPositions" [attr.cx]="opponent.Position.x" [attr.cy]="opponent.Position.y" r="5" stroke="green" stroke-width="1" [attr.fill]="opponent.Color" />

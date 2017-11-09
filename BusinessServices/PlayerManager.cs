@@ -15,6 +15,13 @@ namespace BusinessServices
         public ConcurrentDictionary<Guid, Player> Players;
         public EventManager _eventManager;
 
+        private string[] _playerColors = new string[]
+        {
+            "blue",
+            "red",
+            "black",
+            "purple"
+        };
 
         public PlayerManager(EventManager eventManager)
         {
@@ -33,9 +40,8 @@ namespace BusinessServices
             var newPlayer = new Player(info,
                 WorldState.Instance.GetRandomGridCell(),
                 //WorldGrid[0, 0],
-                new Vector2(GlobalConfigs.GridCellWidth / 2, GlobalConfigs.GridCellHeight / 2));
-
-
+                new Vector2(GlobalConfigs.GridCellWidth / 2, GlobalConfigs.GridCellHeight / 2),
+                _playerColors[info.Name.Min() % _playerColors.Length]);
 
             //spawn some more rocks as a result of a player joining
             //RockGenerator.CreateRandomRocks();
@@ -133,10 +139,6 @@ namespace BusinessServices
                 _eventManager.AddRefreshEvent(oldCell.AdjacentCells, GetPlayersInRadius(player.Coords));
             }
             
-
-
-
-
         }
     }
 }
