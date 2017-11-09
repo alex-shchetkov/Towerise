@@ -31,6 +31,14 @@ export class PlayerComponent extends SocketListener implements AfterViewInit {
         this.directionLine = this.direction;
     }
 
+    public ngAfterViewInit()
+    {
+        this.socketSubject.subscribe((message: any) => {
+            console.log("message");
+            this.onMessage(message);
+        });
+    }
+
     public updatePositionLoop() {
         this.loopStarted = true;
         setTimeout(() => {

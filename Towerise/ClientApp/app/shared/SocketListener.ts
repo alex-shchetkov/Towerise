@@ -1,14 +1,14 @@
-﻿import { AfterViewInit } from '@angular/core';
+﻿import { OnInit, EventEmitter } from '@angular/core';
 import { HandshakeModel } from "./sockets/HandshakeModel";
 import { PositionModel } from "./sockets/PositionModel";
 
-export abstract class SocketListener implements AfterViewInit {
+export abstract class SocketService {
 
     protected socket: WebSocket;
     protected socketClosedMessage: Boolean = false;
     protected socketConnectionStatus: string;
     protected name: string;
-
+    public socketEvents: EventEmitter<any> = new EventEmitter<any>();
     constructor() {
         this.socketConnectionStatus = "red";
     }
@@ -27,7 +27,7 @@ export abstract class SocketListener implements AfterViewInit {
 
     }
 
-    public ngAfterViewInit(): void {
+    public create() {
         this.socket = new WebSocket(`ws://${window.location.host}/ws`);
 
         this.socket.onopen = (event: any) => {
@@ -35,15 +35,21 @@ export abstract class SocketListener implements AfterViewInit {
         }
 
         this.socket.onclose = (event: any) => {
-            this.onClose(event);
+
+            this.socketEvents.complete();
+
         }
 
         this.socket.onerror = (event: any) => {
-            this.onError(event);
+
+            this.socketEvents.error(event);
+
         }
 
         this.socket.onmessage = (event: any) => {
-            this.onMessage(event);
+
+            this.socketEvents.next(event);
+
         }
     }
 
