@@ -63,6 +63,7 @@ namespace Towerise
 
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         await _connectionManager.NewConnection(webSocket);
+                        Console.WriteLine("***** SOCKET IS DONEZO *****");
                         //await Task.Factory.StartNew(async () => await _connectionManager.NewConnection(webSocket));
 
                     }

@@ -1,4 +1,10 @@
 ﻿<svg width="100%" height="auto" [attr.viewBox]="playerComponent.viewBox">
     <svg:g player />
     <svg:g opponents />
+    <svg:line x1="-750" x2="-750" y1="-750" y2="750" stroke="black" stroke-width="500"></svg:line>
+    <svg:line x1="-750" x2="750" y1="750" y2="750" stroke="black" stroke-width="500"></svg:line>
+    <svg:line x1="750" x2="750" y1="-750" y2="750" stroke="black" stroke-width="500"></svg:line>
+    <svg:line x1="-750" x2="750" y1="-750" y2="-750" stroke="black" stroke-width="500"></svg:line>
+    <svg:line *ngFor="let gridLine of gridLines" [attr.x1]="gridLine.x1" [attr.x2]="gridLine.x2" [attr.y1]="gridLine.y1" [attr.y2]="gridLine.y2" stroke="black" stroke-width="1"></svg:line>
+    
 </svg>

@@ -9,6 +9,8 @@ import { PlayerComponent } from "./components/player/player.component";
 import { PlaySpaceComponent } from "./components/play-space/play-space.component";
 import { OpponentsComponent } from "./components/opponents/opponents.component";
 
+import { SocketService } from "./shared/socket.service";
+
 
 @NgModule({
     entryComponents: [
@@ -20,6 +22,9 @@ import { OpponentsComponent } from "./components/opponents/opponents.component";
         PlayerComponent,
         PlaySpaceComponent,
         OpponentsComponent
+    ],
+    providers: [
+        SocketService
     ],
     imports: [
         CommonModule,

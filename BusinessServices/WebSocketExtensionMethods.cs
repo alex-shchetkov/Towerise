@@ -17,14 +17,25 @@ namespace BusinessServices
             socket.SendAsync(new ArraySegment<byte>(bytes, 0, bytes.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
+        public static void SendData(this WebSocket socket, byte[] data)
+        {
+            if (data.Length > 4096) throw new Exception("message sent is too large");
+            socket.SendAsync(new ArraySegment<byte>(data, 0, data.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
         public static async Task<T> GetData<T>(this WebSocket socket)
         {
+            string str = null;
             try
             {
                 var buffer = new byte[1024 * 4];
                 WebSocketReceiveResult result =
-                    await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                var str = System.Text.Encoding.Default.GetString(buffer);
+                    await socket.ReceiveAsync(new ArraySegment<byte>(buffer), new CancellationToken(false));
+                if (!result.EndOfMessage || result.CloseStatus.HasValue || result.CloseStatusDescription != null)
+                {
+                    Console.WriteLine("lets check it out");
+                }
+                str = System.Text.Encoding.Default.GetString(buffer);
                 return JsonConvert.DeserializeObject<T>(str);
             }
             catch(Exception e)

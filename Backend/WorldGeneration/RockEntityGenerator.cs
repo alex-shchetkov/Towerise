@@ -61,7 +61,7 @@ namespace Backend.WorldGeneration
             var destroyedRock = (Rock) sender;
             _totalRockCount--;
 
-            CreateThrowableRock(destroyedRock.CurrentCell, destroyedRock.Coords);
+            CreateThrowableRock(destroyedRock.CurrentCell, destroyedRock.LocalCoords);
 
         }
     }

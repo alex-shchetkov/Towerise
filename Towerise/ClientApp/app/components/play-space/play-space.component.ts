@@ -2,6 +2,9 @@
 import { PlayerComponent } from "../player/player.component";
 import { OpponentsComponent } from "../opponents/opponents.component";
 import { Vector2 } from "../../shared/Vector2";
+import { GridLine } from "../../shared/GridLine";
+import { Opponent } from '../../shared/Opponent';
+import { SocketService } from '../../shared/socket.service';
 
 @Component({
     selector: 'play-space',
@@ -15,15 +18,40 @@ export class PlaySpaceComponent implements OnInit {
     @ViewChild(OpponentsComponent)
     public opponentsComponent: OpponentsComponent;
 
-    constructor() {
+    public gridLines = new Array<GridLine>();
+
+    constructor(public socketService: SocketService) {
+
+        this.populateGridLineArray();
     }
 
     public ngOnInit() {
-        this.playerComponent.opponentPositions.subscribe((positions: Array<Vector2>) => {
+        this.socketService.create(`ws://${window.location.host}/ws`).subscribe(() => {
 
-            this.opponentsComponent.opponentPositions = positions;
+            console.log("Socket Opened!");
 
+        },
+            (error: any) => {
+                console.error(error);
+            }
+        );
+
+        this.socketService.socketEvents.subscribe(() => { }, (error: any) => {
+            console.log("socket error");
+            console.log(event);
         });
+    }
+
+    public populateGridLineArray() {
+
+        for (let x = -5; x < 6; x++) {
+            this.gridLines.push({ x1: x * 100, x2: x * 100, y1: -500, y2: 500 });
+        }
+
+        for (let y = -5; y < 6; y++) {
+            this.gridLines.push({ x1: -500, x2: 500, y1: y * 100, y2: y * 100 });
+        }
+
     }
 
 
@@ -42,5 +70,10 @@ export class PlaySpaceComponent implements OnInit {
         this.playerComponent.mousePosition.x = this.playerComponent.svgPoint.x;
         this.playerComponent.mousePosition.y = this.playerComponent.svgPoint.y;
         this.playerComponent.direction = this.playerComponent.mousePosition.sub(this.playerComponent.playerPosition);
+        if (this.playerComponent.isMouseDown) {
+
+
+        }
     }
+
 }
