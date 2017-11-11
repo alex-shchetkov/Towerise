@@ -24,7 +24,7 @@ namespace BusinessServices
             catch (Exception e)
             {
                 Console.WriteLine("Player dc'ed during update: " + e.Message);
-                player.OnPlayerDisconnected();
+                player.Socket = null;
             }
 
 

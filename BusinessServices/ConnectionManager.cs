@@ -97,6 +97,7 @@ namespace BusinessServices
             catch (Exception e)
             {
                 Console.WriteLine("exception in SendInitialWorldState: "+e.Message);
+                player.Socket = null;
             }
              
         }
@@ -120,7 +121,7 @@ namespace BusinessServices
             catch (Exception e)
             {
                 Console.WriteLine("exception: "+e.Message);
-                player.OnPlayerDisconnected();
+                player.Socket = null;
             }
             
             

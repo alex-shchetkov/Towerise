@@ -9,7 +9,7 @@
 
     public get stringifiedModel(): string {
         return JSON.stringify({
-            Velocity: {
+            Direction: {
                 X: this.X,
                 Y: this.Y
             },

@@ -11,15 +11,18 @@ namespace Model.BackendModel
         [NonSerialized]
         public WebSocket Socket;
         
-        public event EventHandler PlayerDisconnected;
 
 
         public Player(PlayerHandshake info, GridCell cell, Vector2 initialLocalCoords, string color) 
             : base(cell, initialLocalCoords)
         {
-            UniqueId = info.PlayerConnectionId;
-            Name = info.Name;
-            Socket = info.Socket;
+            if (info != null)
+            {
+                UniqueId = info.PlayerConnectionId;
+                Name = info.Name;
+                Socket = info.Socket;
+            }
+                Console.WriteLine(cell.GlobalX+" "+cell.GlobalY);
             Color = color;
         }
 
@@ -31,10 +34,5 @@ namespace Model.BackendModel
         public PlayerInventory Inventory { get; set; }
 
         public Guid UniqueId;
-
-        public virtual void OnPlayerDisconnected()
-        {
-            PlayerDisconnected?.Invoke(this, EventArgs.Empty);
-        }
     }
 }

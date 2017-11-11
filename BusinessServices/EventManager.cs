@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Backend;
 using Model.BackendModel;
 using Newtonsoft.Json;
 
@@ -16,6 +17,14 @@ namespace BusinessServices
     /// </summary>
     public class EventManager
     {
+        private const int _msPerSimTick = 31; //this is around 32 times per second
+        private const int _msPerSnapshotTick = 50; //this is 20 times per second
+
+
+
+        public int CurrentSimTick = 0;
+
+
         public ConcurrentQueue<Action> Events, OutgoingEvents;
         public SocketManager _socketManager;
 
@@ -44,34 +53,66 @@ namespace BusinessServices
         }
 
 
+        
+        private int _leftOverSimMs = 0;
+        private int _leftOverSnapshotMs = 0;
+        private DateTime _prevTime;
 
         public void BeginProcessingIncomingEvents()
         {
             while (true)
             {
-                while (!Events.IsEmpty)
-                {
-                    try
-                    {
-                        Action cEvent = null;
-                        Events.TryDequeue(out cEvent);
-                        if (cEvent != null)
-                        {
-                            cEvent.Invoke();
-                            
-                        }
-                        else continue;
-
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                        Console.WriteLine(e.StackTrace);
-                    }
-                }
                 
-                RefreshAllPlayers();
-                Thread.Sleep(56);
+                
+
+                
+
+                var deltaTime = (DateTime.Now - _prevTime).Milliseconds;
+
+                _leftOverSnapshotMs += deltaTime;
+                _leftOverSimMs += deltaTime;
+
+                if (_leftOverSnapshotMs > _msPerSnapshotTick)
+                {
+                    int snapshotPointer = WorldState.Instance.TakeSnapshot(CurrentSimTick);
+                    _leftOverSnapshotMs = _leftOverSnapshotMs % _msPerSnapshotTick;
+
+                    RefreshAllPlayers(snapshotPointer);
+                }
+
+
+                if (_leftOverSimMs > _msPerSimTick)
+                {
+                    _leftOverSimMs = _leftOverSimMs % _msPerSimTick;
+                    CurrentSimTick++;
+                    while (!Events.IsEmpty)
+                    {
+
+                        try
+                        {
+
+                            Action cEvent = null;
+                            Events.TryDequeue(out cEvent);
+                            if (cEvent != null)
+                            {
+                                cEvent.Invoke();
+
+                            }
+                            else continue;
+
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                            Console.WriteLine(e.StackTrace);
+                        }
+                    }
+                    PlayerManager.Instance.GameSimTick(CurrentSimTick);
+                }
+
+
+                _prevTime = DateTime.Now;
+                Thread.Sleep(10);
             }
             
         }
@@ -105,20 +146,22 @@ namespace BusinessServices
 
         }
 
-        public void RefreshAllPlayers()
+        public void RefreshAllPlayers(int snapshotPointer)
         {
             var tasks = new List<Task>();
             //List<KeyValuePair<Player, byte[]>> listOfUpdates = new List<KeyValuePair<Player, byte[]>>();
             if (PlayerManager.Instance.Players.Count==0) return;
             foreach (var player in PlayerManager.Instance.Players)
             {
-                if (player.Socket.State == WebSocketState.Open)
+                if(player.CurrentCell==null)continue;
+                if (player.Socket != null &&player.Socket.State == WebSocketState.Open)
                     tasks.Add(Task.Factory.StartNew(() =>
                         player.Socket.SendData(
-                            Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(player.CurrentCell.AdjacentCells)))));
+                            Encoding.UTF8.GetBytes(player.CurrentCell.GetAdjacentCells(snapshotPointer)))));
                 else
                 {
-                    AddEvent(() =>PlayerManager.Instance.Players.Remove(player));
+                    //AddEvent(() =>PlayerManager.Instance.Players.Remove(player));
+                    player.Socket = null;
                 }
             }
 

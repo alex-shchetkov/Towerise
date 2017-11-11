@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Numerics;
 using Backend;
 using BusinessServices.NetworkModel;
@@ -14,6 +15,7 @@ namespace BusinessServices
     public class PlayerManager: Manager
     {
         public List<Player> Players;
+        public List<Player> PlayerBots;
         public EventManager _eventManager;
 
         private string[] _playerColors = new string[]
@@ -53,6 +55,7 @@ namespace BusinessServices
             //and a couple more in the same cell as the player
             //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
             Players.Add(newPlayer);
+            Players.Add(new Player(null, WorldState.Instance.GetRandomGridCell(),new Vector2(50,50), _playerColors[info.Name.Min() % _playerColors.Length]));
 
             //_eventManager.AddRefreshEvent( newPlayer.CurrentCell.AdjacentCells, GetPlayersInRadius(newPlayer.Coords) );
             //_eventManager.AddEvent(()=>Players.Add(newPlayer));
@@ -69,7 +72,7 @@ namespace BusinessServices
             switch (action.Type)
             {
                 case PlayerActionType.Move:
-                    MovePlayer(action.Player, action.Velocity);
+                    MovePlayer(action.Player, action.Direction);
                     break;
                 case PlayerActionType.Punch:
                     break;
@@ -100,6 +103,7 @@ namespace BusinessServices
 
             GridCell newCell = null;
             GridCell oldCell = player.CurrentCell;
+            if (oldCell == null) return;
 
             var moveBitarray = 0b0000
                                | (player.LocalCoords.X < 0 ? 0b1000 : 0)
@@ -130,7 +134,8 @@ namespace BusinessServices
                 }
                 player.CurrentCell = newCell;
                 oldCell.Players.Remove(player);
-                newCell.Players.Add(player);
+                if(newCell!=null)
+                    newCell.Players.Add(player);
                 //_eventManager.AddRefreshEvent(oldCell.AdjacentCells.Union(newCell.AdjacentCells).ToArray(), GetPlayersInRadius(player.Coords));
             }
             else
@@ -138,6 +143,16 @@ namespace BusinessServices
                // _eventManager.AddRefreshEvent(oldCell.AdjacentCells, GetPlayersInRadius(player.Coords));
             }
             
+        }
+        
+
+        public void GameSimTick(int currentSimTick)
+        {
+            var botPlayers = Players.Where(p => p.Socket == null || p.Socket.State != WebSocketState.Open);
+            foreach (var bot in botPlayers)
+            {
+                MovePlayer(bot, new Vector2(MathF.Sin(currentSimTick/10f), MathF.Cos(currentSimTick/10f))*5);
+            }
         }
     }
 }

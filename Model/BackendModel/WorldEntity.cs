@@ -10,6 +10,8 @@ namespace Model.BackendModel
         
         //public event EventHandler MovedCells;
         public event EventHandler EntityMoved;
+        
+
 
 
         public WorldEntity(GridCell cell, Vector2 initialLocalCoords)

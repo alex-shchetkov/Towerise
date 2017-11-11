@@ -8,7 +8,9 @@ namespace Model.NetworkModel
     public class PlayerAction
     {
         public PlayerActionType Type;
-        public Vector2 Velocity;
+        
+        public Vector2 Direction; 
+        
 
         [NonSerialized]public Player Player;
     }

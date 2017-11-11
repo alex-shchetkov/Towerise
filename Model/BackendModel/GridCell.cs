@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace Model.BackendModel
 {
@@ -23,6 +25,9 @@ namespace Model.BackendModel
 
         [NonSerialized] public GridCell LeftAdjCell, RightAdjCell, TopAdjCell, BottomAdjCell;
 
+        [NonSerialized] public string[] Snapshots;
+        
+
 
 
         public event EventHandler CellUpdated;
@@ -41,6 +46,8 @@ namespace Model.BackendModel
             _rand = new Random();
             Entities = new List<WorldEntity>();
             Players = new List<Player>();
+
+            Snapshots = new string[20];
         }
 
 
@@ -61,7 +68,6 @@ namespace Model.BackendModel
             {
                 var playerEntity = (Player) worldEntity;
                 Players.Add(playerEntity);
-                playerEntity.PlayerDisconnected += PlayerEntity_PlayerDisconnected;
             }
             else
             {
@@ -79,7 +85,6 @@ namespace Model.BackendModel
             {
                 var playerEntity = (Player)worldEntity;
                 Players.Remove(playerEntity);
-                playerEntity.PlayerDisconnected -= PlayerEntity_PlayerDisconnected;
             }
             else
             {
@@ -127,12 +132,23 @@ namespace Model.BackendModel
             }
         }*/
 
-        private void PlayerEntity_PlayerDisconnected(object sender, EventArgs e)
+
+        public void TakeSnapshot(int snapshotPointer)
         {
-            Players.Remove((Player)sender);
-            OnCellUpdated();
+            Snapshots[snapshotPointer] = JsonConvert.SerializeObject(this);
         }
 
-        
+        public string GetAdjacentCells(int snapshotPointer)
+        {
+            StringBuilder retVal = new StringBuilder();
+            retVal.Append('[');
+            foreach (var cell in AdjacentCells)
+            {
+                retVal.Append(cell.Snapshots[snapshotPointer]+',');
+            }
+            retVal[retVal.Length - 1] = ']';
+
+            return retVal.ToString();
+        }
     }
 }

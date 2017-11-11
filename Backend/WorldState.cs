@@ -32,10 +32,15 @@ namespace Backend
         public RockEntityGenerator RockGenerator;
 
         public event EventHandler WorldUpdated;
+
+        public int[] SnapshotTickTracker;
+        
+        public int CurrentSnapshotPtr = 0;
+        public int CurrentTick = 0;
         
         public WorldState()
         {
-
+            SnapshotTickTracker = new int[20];
             Instance = this;
             PlayerList = new List<Player>();
             Items = new List<Item>();
@@ -118,7 +123,7 @@ namespace Backend
             switch (action.Type)
             {
                 case PlayerActionType.Move:
-                    action.Player.Move(action.Velocity);
+                    action.Player.Move(action.Direction);
                     break;
                 case PlayerActionType.Punch:
                     break;
@@ -135,7 +140,25 @@ namespace Backend
             WorldUpdated?.Invoke(updatedCell, EventArgs.Empty);
         }
 
-        
+
+        public int TakeSnapshot(int snapshotTick)
+        {
+            var retVal = CurrentSnapshotPtr;
+
+            SnapshotTickTracker[CurrentSnapshotPtr] = snapshotTick;
+
+            for (int i = 0; i < WorldGrid.GetLength(0); i++)
+            {
+                for (int n = 0; n < WorldGrid.GetLength(1); n++)
+                {
+                    WorldGrid[i, n].TakeSnapshot(CurrentSnapshotPtr);
+                }
+            }
+
+            CurrentSnapshotPtr = (CurrentSnapshotPtr + 1) % 20;
+
+            return retVal;
+        }
     }
 
 }
