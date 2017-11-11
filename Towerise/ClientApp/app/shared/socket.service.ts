@@ -70,11 +70,10 @@ export class SocketService {
     }
 
     public get name(): string {
-        var text = this.localName;
-        if (text)
-            return text;
+        if (this.localName)
+            return this.localName;
         var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
+        var text = "";
         for (var i = 0; i < 5; i++)
             text += possible.charAt(Math.floor(Math.random() * possible.length));
         console.log("generated name: " + text);
