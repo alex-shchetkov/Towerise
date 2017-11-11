@@ -4,6 +4,7 @@ import { OpponentsComponent } from "../opponents/opponents.component";
 import { Vector2 } from "../../shared/Vector2";
 import { GridLine } from "../../shared/GridLine";
 import { Opponent } from '../../shared/Opponent';
+import { SocketService } from '../../shared/socket.service';
 
 @Component({
     selector: 'play-space',
@@ -19,21 +20,29 @@ export class PlaySpaceComponent implements OnInit {
 
     public gridLines = new Array<GridLine>();
 
-    constructor() {
+    constructor(public socketService: SocketService) {
 
         this.populateGridLineArray();
     }
 
     public ngOnInit() {
-        this.playerComponent.opponentPositions.subscribe((positions: Array<Opponent>) => {
+        this.socketService.create(`ws://${window.location.host}/ws`).subscribe(() => {
 
-            this.opponentsComponent.opponentPositions = positions;
+            console.log("Socket Opened!");
 
+        },
+            (error: any) => {
+                console.error(error);
+            }
+        );
+
+        this.socketService.socketEvents.subscribe(() => { }, (error: any) => {
+            console.log("socket error");
+            console.log(event);
         });
     }
 
     public populateGridLineArray() {
-
 
         for (let x = -5; x < 6; x++) {
             this.gridLines.push({ x1: x * 100, x2: x * 100, y1: -500, y2: 500 });
@@ -63,27 +72,8 @@ export class PlaySpaceComponent implements OnInit {
         this.playerComponent.direction = this.playerComponent.mousePosition.sub(this.playerComponent.playerPosition);
         if (this.playerComponent.isMouseDown) {
 
-            
+
         }
     }
-
-    /**
-     * Lets playercomponent know is mouse has been pressed down
-     * @param event MouseEvent
-     */
-    @HostListener('mousedown', ['$event'])
-    onMouseDown(event: MouseEvent) {
-        this.playerComponent.isMouseDown = true;
-    }
-
-    /**
-     * Lets playercomponent know is mouse has been released 
-     * @param event MouseEvent
-     */
-    @HostListener('mouseup', ['$event'])
-    onMouseUp(event: MouseEvent) {
-        this.playerComponent.isMouseDown = false;
-    }
-
 
 }
