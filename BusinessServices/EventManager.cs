@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
@@ -56,18 +57,16 @@ namespace BusinessServices
         
         private int _leftOverSimMs = 0;
         private int _leftOverSnapshotMs = 0;
-        private DateTime _prevTime;
+        private Stopwatch _stopwatch;
 
         public void BeginProcessingIncomingEvents()
         {
+            _stopwatch = new Stopwatch();
+            _stopwatch.Start();
             while (true)
             {
-                
-                
-
-                
-
-                var deltaTime = (DateTime.Now - _prevTime).Milliseconds;
+                var deltaTime = (int)_stopwatch.ElapsedMilliseconds;
+                _stopwatch.Restart();
 
                 _leftOverSnapshotMs += deltaTime;
                 _leftOverSimMs += deltaTime;
@@ -109,9 +108,7 @@ namespace BusinessServices
                     }
                     PlayerManager.Instance.GameSimTick(CurrentSimTick);
                 }
-
-
-                _prevTime = DateTime.Now;
+                
                 Thread.Sleep(10);
             }
             
@@ -137,8 +134,7 @@ namespace BusinessServices
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
-                        Console.WriteLine(e.StackTrace);
+                        Console.WriteLine(e.ToString());
                     }
                 }
                 Thread.Sleep(17);

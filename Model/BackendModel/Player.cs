@@ -22,7 +22,7 @@ namespace Model.BackendModel
                 Name = info.Name;
                 Socket = info.Socket;
             }
-                Console.WriteLine(cell.GlobalX+" "+cell.GlobalY);
+            Console.WriteLine($"x: {cell.GlobalX}, y: {cell.GlobalY}");
             Color = color;
         }
 
