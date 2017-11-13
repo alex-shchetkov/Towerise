@@ -3,12 +3,14 @@ import { PlayerComponent } from "../player/player.component";
 import { OpponentsComponent } from "../opponents/opponents.component";
 import { Vector2 } from "../../shared/Vector2";
 import { GridLine } from "../../shared/GridLine";
+import { CoordLabel } from "../../shared/CoordLabel";
 import { Opponent } from '../../shared/Opponent';
 import { SocketService } from '../../shared/socket.service';
 
 @Component({
     selector: 'play-space',
-    templateUrl: './play-space.component.html'
+    templateUrl: './play-space.component.html',
+    styleUrls: ['./play-space.component.css']
 })
 export class PlaySpaceComponent implements OnInit {
 
@@ -19,6 +21,8 @@ export class PlaySpaceComponent implements OnInit {
     public opponentsComponent: OpponentsComponent;
 
     public gridLines = new Array<GridLine>();
+
+    public coordLabels = new Array<CoordLabel>();
 
     constructor(public socketService: SocketService) {
 
@@ -52,6 +56,14 @@ export class PlaySpaceComponent implements OnInit {
             this.gridLines.push({ x1: -500, x2: 500, y1: y * 100, y2: y * 100 });
         }
 
+
+        for (let x = -5; x < 5; x++) {
+            for (let y = -5; y < 5; y++) {
+                this.coordLabels.push(new CoordLabel(`(${x},${y})`, x * 100+45, y * 100+50));
+            }
+        }
+
+
     }
 
 
@@ -61,19 +73,21 @@ export class PlaySpaceComponent implements OnInit {
      */
     @HostListener('mousemove', ['$event'])
     onMouseMove(event: MouseEvent) {
-        let svg = (document.getElementsByTagName('play-space')[0].getElementsByTagName('svg')[0] as SVGSVGElement);
-        this.playerComponent.transformMatrix = (document.getElementsByTagName('play-space')[0].getElementsByTagName('svg')[0] as SVGSVGElement).getScreenCTM();
-        this.playerComponent.svgPoint = (document.getElementsByTagName('svg')[0] as SVGSVGElement).createSVGPoint();
-        this.playerComponent.svgPoint.x = event.clientX;
-        this.playerComponent.svgPoint.y = event.clientY;
-        this.playerComponent.svgPoint = this.playerComponent.svgPoint.matrixTransform(this.playerComponent.transformMatrix.inverse());
-        this.playerComponent.mousePosition.x = this.playerComponent.svgPoint.x;
-        this.playerComponent.mousePosition.y = this.playerComponent.svgPoint.y;
-        this.playerComponent.direction = this.playerComponent.mousePosition.sub(this.playerComponent.playerPosition);
-        if (this.playerComponent.isMouseDown) {
+        this.playerComponent.direction = new Vector2(event.clientX - window.innerWidth / 2, event.clientY - window.innerHeight / 2);
+        
+    }
 
 
-        }
+    @HostListener('mousedown', ['$event'])
+    onMouseDown(event: MouseEvent) {
+        //event.which returns mouse buttons. 1 is left button
+        if(event.which===1)
+            this.playerComponent.isMouseDown = true;
+    }
+
+    @HostListener('mouseup', ['$event'])
+    onMouseUp(event: MouseEvent) {
+        this.playerComponent.isMouseDown = false;
     }
 
 }

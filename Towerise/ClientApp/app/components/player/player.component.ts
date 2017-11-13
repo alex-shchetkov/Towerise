@@ -17,7 +17,8 @@ export class PlayerComponent implements OnInit {
     public direction: Vector2;
     public mousePosition: Vector2;
     private initialPositionSet: boolean;
-    private velocity = new Vector2(1, 1);
+    private directionVector = new Vector2(1, 1);
+    private dirLineLength = new Vector2(4, 4);
     private loopStarted = false;
     public directionLine: Vector2;
     public playerPosition: Vector2;
@@ -25,7 +26,7 @@ export class PlayerComponent implements OnInit {
 
     constructor(public socketService: SocketService) {
         this.playerPosition = this.mousePosition = new Vector2(window.innerWidth / 2, window.innerHeight / 2);
-        this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+        this.viewBox = `${this.playerPosition.x - window.innerWidth / 4} ${this.playerPosition.y - window.innerHeight / 4} ${window.innerWidth/2} ${window.innerHeight/2}`;
         this.direction = new Vector2(0, 0);
         this.directionLine = this.direction;
     }
@@ -51,11 +52,14 @@ export class PlayerComponent implements OnInit {
         this.loopStarted = true;
         setTimeout(() => {
                 let normal = this.direction.normalize();
-                let movement = normal.mult(this.velocity);
-                this.directionLine = this.playerPosition.add(movement.mult(this.velocity));
-                this.playerPosition = this.playerPosition.add(movement);
-                this.socketService.send(new PositionModel(movement.x, movement.y).stringifiedModel);
-                this.viewBox = `${this.playerPosition.x - window.innerWidth / 2} ${this.playerPosition.y - window.innerHeight / 2} ${window.innerWidth} ${window.innerHeight}`;
+                let movement = normal.mult(this.directionVector);
+                this.directionLine = this.playerPosition.add(movement.mult(this.dirLineLength));
+                if (this.isMouseDown) {
+                    this.playerPosition = this.playerPosition.add(movement);
+                    this.socketService.send(new PositionModel(movement.x, movement.y).stringifiedModel);
+                }
+                
+                this.viewBox = `${this.playerPosition.x - window.innerWidth / 4} ${this.playerPosition.y - window.innerHeight / 4} ${window.innerWidth/2} ${window.innerHeight/2}`;
                 this.updatePositionLoop();
         }, 17);
 

@@ -6,6 +6,7 @@
         public static float GridCellHeight = 100;
         public static int GridCellCountWidth = 10;
         public static int GridCellCountHeight = 10;
+        public static int PacketSize = 4096;
 
     }
 }

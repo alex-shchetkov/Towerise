@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using System.Threading;
 using Backend;
 using BusinessServices;
+using Model;
 
 namespace Towerise
 {
@@ -50,7 +51,7 @@ namespace Towerise
             var webSocketOptions = new WebSocketOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120),
-                ReceiveBufferSize = 4 * 1024
+                ReceiveBufferSize = GlobalConfigs.PacketSize;
 
             };
             app.UseWebSockets(webSocketOptions);
