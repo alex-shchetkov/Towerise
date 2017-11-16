@@ -59,31 +59,23 @@ namespace BusinessServices
         private int _leftOverSnapshotMs = 0;
         private Stopwatch _stopwatch;
 
-        public void BeginProcessingIncomingEvents()
+        public async Task BeginProcessingIncomingEvents()
         {
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
             while (true)
             {
-                var deltaTime = (int)_stopwatch.ElapsedMilliseconds;
-                _stopwatch.Restart();
+                
+                
 
-                _leftOverSnapshotMs += deltaTime;
-                _leftOverSimMs += deltaTime;
-
-                if (_leftOverSnapshotMs > _msPerSnapshotTick)
-                {
-                    int snapshotPointer = WorldState.Instance.TakeSnapshot(CurrentSimTick);
-                    _leftOverSnapshotMs = _leftOverSnapshotMs % _msPerSnapshotTick;
-
-                    RefreshAllPlayers(snapshotPointer);
-                }
+                
 
 
                 if (_leftOverSimMs > _msPerSimTick)
                 {
                     _leftOverSimMs = _leftOverSimMs % _msPerSimTick;
                     CurrentSimTick++;
+                    Console.WriteLine(CurrentSimTick);
                     while (!Events.IsEmpty)
                     {
 
@@ -106,40 +98,32 @@ namespace BusinessServices
                             Console.WriteLine(e.StackTrace);
                         }
                     }
+
                     PlayerManager.Instance.GameSimTick(CurrentSimTick);
                 }
+
+
+                if (_leftOverSnapshotMs > _msPerSnapshotTick)
+                {
+                    int snapshotPointer = WorldState.Instance.TakeSnapshot(CurrentSimTick);
+                    _leftOverSnapshotMs = _leftOverSnapshotMs % _msPerSnapshotTick;
+
+                    RefreshAllPlayers(snapshotPointer);
+                }
+
+
+
+
+                var deltaTime = (int)_stopwatch.ElapsedMilliseconds;
                 
-                Thread.Sleep(10);
+
+                _leftOverSnapshotMs += deltaTime;
+                _leftOverSimMs += deltaTime;
+                _stopwatch.Restart();
+                await Task.Delay(10);
+                //Thread.Sleep(5);
             }
             
-        }
-
-        public void BeginProcessingOutgoingEvents()
-        {
-            while (true)
-            {
-                while (!OutgoingEvents.IsEmpty)
-                {
-                    try
-                    {
-                        /*Action cEvent = null;
-                        OutgoingEvents.TryDequeue(out cEvent);
-                        if (cEvent != null)
-                        {
-                            cEvent.Invoke();
-                        }
-                        else break;*/
-
-                        
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.ToString());
-                    }
-                }
-                Thread.Sleep(17);
-            }
-
         }
 
         public void RefreshAllPlayers(int snapshotPointer)
@@ -153,7 +137,7 @@ namespace BusinessServices
                 if (player.Socket != null &&player.Socket.State == WebSocketState.Open)
                     tasks.Add(Task.Factory.StartNew(() =>
                         player.Socket.SendData(
-                            Encoding.UTF8.GetBytes(player.CurrentCell.GetAdjacentCells(snapshotPointer)))));
+                            Encoding.UTF8.GetBytes("{\"tick\":"+WorldState.Instance.SnapshotTickTracker[snapshotPointer]+",\"Cells\":"+player.CurrentCell.GetAdjacentCells(snapshotPointer)+"}"))));
                 else
                 {
                     //AddEvent(() =>PlayerManager.Instance.Players.Remove(player));
@@ -161,25 +145,6 @@ namespace BusinessServices
                 }
             }
 
-        }
-
-        //Might need to make a copy of the cell state
-        public void AddRefreshEvent(GridCell[] updatedCells, Player[] affectedPlayers)
-        {
-            var updatedCellData =Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(updatedCells));
-            var tasks = new List<Task>();
-            foreach (var updatedCell in updatedCells)
-            {
-                
-                    foreach (var player in updatedCell.Players)
-                    {
-
-                        tasks.Add(Task.Factory.StartNew(() =>
-                            player.Socket.SendData(updatedCellData)));
-                    }
-                
-                
-            }
         }
     }
 }

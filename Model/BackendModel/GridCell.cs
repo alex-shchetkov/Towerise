@@ -26,7 +26,9 @@ namespace Model.BackendModel
         [NonSerialized] public GridCell LeftAdjCell, RightAdjCell, TopAdjCell, BottomAdjCell;
 
         [NonSerialized] public string[] Snapshots;
-        
+
+        [NonSerialized] public bool[] SnapshotHasChanges;
+
 
 
 
@@ -40,21 +42,23 @@ namespace Model.BackendModel
             var xOffset = GlobalConfigs.GridCellCountWidth * GlobalConfigs.GridCellWidth / 2;
             var yOffset = GlobalConfigs.GridCellCountHeight * GlobalConfigs.GridCellHeight / 2;
 
-            GlobalX = x*GlobalConfigs.GridCellWidth - xOffset;
-            GlobalY = y*GlobalConfigs.GridCellHeight - yOffset;
+            GlobalX = x * GlobalConfigs.GridCellWidth - xOffset;
+            GlobalY = y * GlobalConfigs.GridCellHeight - yOffset;
 
             _rand = new Random();
             Entities = new List<WorldEntity>();
             Players = new List<Player>();
 
             Snapshots = new string[20];
+            SnapshotHasChanges = new bool[20];
+
         }
 
 
 
         public Vector2 GetRandomCoordinate()
         {
-            return new Vector2((float) (_rand.NextDouble()*GlobalConfigs.GridCellWidth), (float) (_rand.NextDouble()*GlobalConfigs.GridCellHeight));
+            return new Vector2((float)(_rand.NextDouble() * GlobalConfigs.GridCellWidth), (float)(_rand.NextDouble() * GlobalConfigs.GridCellHeight));
         }
 
         protected virtual void OnCellUpdated()
@@ -66,7 +70,7 @@ namespace Model.BackendModel
         {
             if (worldEntity.GetType() == typeof(Player))
             {
-                var playerEntity = (Player) worldEntity;
+                var playerEntity = (Player)worldEntity;
                 Players.Add(playerEntity);
             }
             else
@@ -90,7 +94,7 @@ namespace Model.BackendModel
             {
                 Entities.Remove(worldEntity);
             }
-            
+
             worldEntity.EntityMoved -= WorldEntity_EntityMoved;
         }
 
@@ -135,17 +139,37 @@ namespace Model.BackendModel
 
         public void TakeSnapshot(int snapshotPointer)
         {
-            Snapshots[snapshotPointer] = JsonConvert.SerializeObject(this);
+            //TODO: There is a far more efficient method to do this... just let it slide for now
+
+            string prevSnapShot = Snapshots[(snapshotPointer + Snapshots.Length - 1) % Snapshots.Length];
+            string currentSnapshot = JsonConvert.SerializeObject(this);
+            if (prevSnapShot == currentSnapshot)
+            {
+                SnapshotHasChanges[snapshotPointer] = false;
+            }
+            else
+            {
+                SnapshotHasChanges[snapshotPointer] = true;
+            }
+
+            Snapshots[snapshotPointer] = currentSnapshot;
         }
 
         public string GetAdjacentCells(int snapshotPointer)
         {
             StringBuilder retVal = new StringBuilder();
             retVal.Append('[');
+
             foreach (var cell in AdjacentCells)
             {
-                retVal.Append(cell.Snapshots[snapshotPointer]+',');
+                retVal.Append(cell.SnapshotHasChanges[snapshotPointer] ? (cell.Snapshots[snapshotPointer] + ',') : "");
             }
+
+            if (retVal.Length == 1) return "[]";
+            var test = new Vector2(3,5);
+            var test2 = new Vector2(3,5);
+            var result = test*test2;
+
             retVal[retVal.Length - 1] = ']';
 
             return retVal.ToString();

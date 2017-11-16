@@ -18,12 +18,22 @@ namespace BusinessServices
         public List<Player> PlayerBots;
         public EventManager _eventManager;
 
+        private Random _rand;
+
+        public List<UserCommand> CommandQueue;
+
         private string[] _playerColors = new string[]
         {
             "blue",
             "red",
             "black",
-            "purple"
+            "purple",
+            "cyan",
+            "fuchsia",
+            "magenta",
+            "lime",
+            "aqua",
+            "white"
         };
         public static PlayerManager Instance;
 
@@ -31,7 +41,9 @@ namespace BusinessServices
         public PlayerManager(EventManager eventManager)
         {
             Players = new List<Player>();
+            CommandQueue = new List<UserCommand>();
             _eventManager = eventManager;
+            _rand = new Random();
             Instance = this;
         }
 
@@ -55,7 +67,7 @@ namespace BusinessServices
             //and a couple more in the same cell as the player
             //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
             Players.Add(newPlayer);
-            Players.Add(new Player(null, WorldState.Instance.GetRandomGridCell(),new Vector2(50,50), _playerColors[info.Name.Min() % _playerColors.Length]));
+            Players.Add(new Player(null, WorldState.Instance.GetRandomGridCell(),new Vector2(50,50), _playerColors[_rand.Next(_playerColors.Length)]));
 
             //_eventManager.AddRefreshEvent( newPlayer.CurrentCell.AdjacentCells, GetPlayersInRadius(newPlayer.Coords) );
             //_eventManager.AddEvent(()=>Players.Add(newPlayer));
@@ -67,20 +79,36 @@ namespace BusinessServices
             return Players.Where(p => Vector2.Distance(p.Coords, coords) < 300).ToArray();
         }
 
-        public void ProcessPlayerAction(PlayerAction action)
+        public void ProcessUserCommand(UserCommand command)
         {
-            switch (action.Type)
+            var player = command.Player;
+
+            
+            if (player.PrevProcessedTick== 0)
             {
-                case PlayerActionType.Move:
-                    MovePlayer(action.Player, action.Direction);
-                    break;
-                case PlayerActionType.Punch:
-                    break;
-                case PlayerActionType.Throw:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                player.PrevProcessedTick = command.Tick;
             }
+/*
+            if (player.IsMouseDown)
+            {
+                MovePlayer(player, player.Direction* (command.Tick - player.PrevProcessedTick));
+                
+            }*/
+
+            if (command.Type == CommandType.MouseDown)
+            {
+                player.IsMouseDown = true;
+            }
+            else if (command.Type == CommandType.MouseUp)
+            {
+                player.IsMouseDown = false;
+            }
+            else if (command.Type == CommandType.Direction)
+            {
+                player.Direction = command.Direction;
+            }
+
+            player.PrevProcessedTick = command.Tick;
         }
 
 
@@ -153,6 +181,38 @@ namespace BusinessServices
             {
                 MovePlayer(bot, new Vector2(MathF.Sin(currentSimTick/10f), MathF.Cos(currentSimTick/10f))*5);
             }
+
+            var sortedUserCommands = CommandQueue.OrderBy(c => c.Tick).ToArray();
+
+
+            for (int i = 0; i < sortedUserCommands.Length; i++)
+            {
+
+                ProcessUserCommand(sortedUserCommands[i]);
+                CommandQueue.Remove(sortedUserCommands[i]);
+                /*if (sortedUserCommands[i].Tick < currentSimTick)
+                {
+                }*/
+                
+            }
+            //CommandQueue.Clear();
+
+            for (int i = 0; i < Players.Count; i++)
+            {
+                if ( Players[i].IsMouseDown)
+                {
+                    MovePlayer(Players[i], Players[i].Direction);
+                    Players[i].PrevProcessedTick = _eventManager.CurrentSimTick;
+                }
+                
+            }
+
+        }
+
+        public void AddCommandsToQueue(List<UserCommand> userCommands)
+        {
+            CommandQueue.AddRange(userCommands);
+
         }
     }
 }

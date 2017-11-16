@@ -5,20 +5,22 @@ using Model.BackendModel;
 namespace Model.NetworkModel
 {
     [Serializable]
-    public class PlayerAction
+    public class UserCommand
     {
-        public PlayerActionType Type;
+        public CommandType Type;
+        public int Tick;
         
         public Vector2 Direction; 
         
 
         [NonSerialized]public Player Player;
+
     }
 
-    public enum PlayerActionType
+    public enum CommandType
     {
-        Move,
-        Punch,
-        Throw
+        MouseDown=1,
+        MouseUp=2,
+        Direction=0
     }
 }

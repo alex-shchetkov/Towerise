@@ -15,8 +15,8 @@
         return new Vector2((this.x / (this.magnitude || 1)), (this.y / (this.magnitude || 1)));
     }
 
-    public mult(multiplicationVector: Vector2) {
-        return new Vector2(this.x * multiplicationVector.x, this.y * multiplicationVector.y);
+    public mult(scalar: number) {
+        return new Vector2(this.x * scalar, this.y * scalar);
     }
 
     public add(additionVector: Vector2) {

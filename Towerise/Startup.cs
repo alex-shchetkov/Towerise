@@ -51,7 +51,7 @@ namespace Towerise
             var webSocketOptions = new WebSocketOptions()
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120),
-                ReceiveBufferSize = GlobalConfigs.PacketSize;
+                ReceiveBufferSize = GlobalConfigs.PacketSize
 
             };
             app.UseWebSockets(webSocketOptions);

@@ -118,22 +118,6 @@ namespace Backend
             return WorldGrid[_rand.Next(GlobalConfigs.GridCellCountWidth),_rand.Next(GlobalConfigs.GridCellCountHeight)];
         }
 
-        public void ProcessAction(PlayerAction action)
-        {
-            switch (action.Type)
-            {
-                case PlayerActionType.Move:
-                    action.Player.Move(action.Direction);
-                    break;
-                case PlayerActionType.Punch:
-                    break;
-                case PlayerActionType.Throw:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
 
         protected virtual void OnWorldUpdated(GridCell updatedCell)
         {

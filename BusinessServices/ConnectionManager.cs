@@ -110,9 +110,12 @@ namespace BusinessServices
             {
                 while (socket.State==WebSocketState.Open)
                 {
-                    var action = await socket.GetData<PlayerAction>();
-                    action.Player = player;
-                    _eventManager.AddEvent(()=>_playerManager.ProcessPlayerAction(action));
+                    var userCommands = await socket.GetData<List<UserCommand>>();
+                    foreach (var command in userCommands)
+                    {
+                        command.Player = player;
+                    }
+                    _eventManager.AddEvent(()=>_playerManager.AddCommandsToQueue(userCommands));
                     //_world.ProcessAction(action);
                 }
                 Console.WriteLine("***************** NEW STATUS: " + socket.State);

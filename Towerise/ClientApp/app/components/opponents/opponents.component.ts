@@ -28,13 +28,13 @@ export class OpponentsComponent implements OnInit {
     }
 
     public onMessage(json: any) {
-
+        let cells = json.Cells;
         let oppCount = 0;
-        console.log(json);
-        for (let c = 0; c < json.length; c++) {
-            for (let p = 0; p < json[c].Players.length; p++) {
+        //console.log(json);
+        for (let c = 0; c < cells.length; c++) {
+            for (let p = 0; p < cells[c].Players.length; p++) {
 
-                if (json[c].Players[p].Name !== this.socketService.name) {
+                if (cells[c].Players[p].Name !== this.socketService.name) {
                     if (this.opponentPositions.length <= oppCount) {
                         let opp = new Opponent();
                         opp.Position = new Vector2(0, 0);
@@ -42,9 +42,9 @@ export class OpponentsComponent implements OnInit {
                         this.opponentPositions.push(opp);
                     }
                     let currentOpponent = this.opponentPositions[oppCount];
-                    currentOpponent.Position.x = json[c].Players[p].Coords.X;
-                    currentOpponent.Position.y = json[c].Players[p].Coords.Y;
-                    currentOpponent.Color = json[c].Players[p].Color;
+                    currentOpponent.Position.x = cells[c].Players[p].Coords.X;
+                    currentOpponent.Position.y = cells[c].Players[p].Coords.Y;
+                    currentOpponent.Color = cells[c].Players[p].Color;
                     oppCount++;
                 }
             }

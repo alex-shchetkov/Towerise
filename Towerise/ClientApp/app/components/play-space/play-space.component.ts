@@ -66,6 +66,11 @@ export class PlaySpaceComponent implements OnInit {
 
     }
 
+    public getNormalizedDirection(clientX: number, clientY: number) {
+
+        return new Vector2(clientX - window.innerWidth / 2, clientY - window.innerHeight / 2).normalize();
+    }
+
 
     /**
      * Sets mouse position for player to move towards
@@ -73,7 +78,7 @@ export class PlaySpaceComponent implements OnInit {
      */
     @HostListener('mousemove', ['$event'])
     onMouseMove(event: MouseEvent) {
-        this.playerComponent.direction = new Vector2(event.clientX - window.innerWidth / 2, event.clientY - window.innerHeight / 2);
+        this.playerComponent.onNewDirection(this.getNormalizedDirection(event.clientX, event.clientY));
         
     }
 
@@ -81,13 +86,17 @@ export class PlaySpaceComponent implements OnInit {
     @HostListener('mousedown', ['$event'])
     onMouseDown(event: MouseEvent) {
         //event.which returns mouse buttons. 1 is left button
-        if(event.which===1)
-            this.playerComponent.isMouseDown = true;
+        if (event.which === 1)
+            this.playerComponent.onMouseDown(this.getNormalizedDirection(event.clientX, event.clientY));
     }
 
     @HostListener('mouseup', ['$event'])
     onMouseUp(event: MouseEvent) {
-        this.playerComponent.isMouseDown = false;
+        //event.which returns mouse buttons. 1 is left button
+        if (event.which === 1)
+            this.playerComponent.onMouseUp(this.getNormalizedDirection(event.clientX,event.clientY));
     }
+
+    
 
 }

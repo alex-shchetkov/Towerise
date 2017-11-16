@@ -10,6 +10,10 @@ namespace Model.BackendModel
     {
         [NonSerialized]
         public WebSocket Socket;
+
+        [NonSerialized] public bool IsMouseDown;
+        [NonSerialized] public Vector2 Direction;
+        [NonSerialized] public int PrevProcessedTick;
         
 
 
