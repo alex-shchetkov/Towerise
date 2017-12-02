@@ -8,6 +8,8 @@ import { AppComponent } from './components/app/app.component';
 import { PlayerComponent } from "./components/player/player.component";
 import { PlaySpaceComponent } from "./components/play-space/play-space.component";
 import { OpponentsComponent } from "./components/opponents/opponents.component";
+import { ObjectsComponent } from "./components/objects/objects.component";
+import { RockComponent } from "./components/objects/rocks/rock.component";
 
 import { SocketService } from "./shared/socket.service";
 
@@ -21,7 +23,9 @@ import { SocketService } from "./shared/socket.service";
         AppComponent,
         PlayerComponent,
         PlaySpaceComponent,
-        OpponentsComponent
+        OpponentsComponent,
+        RockComponent,
+        ObjectsComponent
     ],
     providers: [
         SocketService
