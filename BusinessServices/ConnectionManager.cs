@@ -19,6 +19,7 @@ namespace BusinessServices
         private SocketManager _socketManager;
         private EventManager _eventManager;
         private PlayerManager _playerManager;
+        private RockEntityManager _rockManager;
 
         public ConnectionManager(WorldState world)
         {
@@ -28,6 +29,7 @@ namespace BusinessServices
             _socketManager = new SocketManager();
             _eventManager = new EventManager(_socketManager);
             _playerManager = new PlayerManager(_eventManager);
+            _rockManager = new RockEntityManager(_eventManager);
 
         }
 

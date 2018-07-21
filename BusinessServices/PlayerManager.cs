@@ -65,7 +65,7 @@ namespace BusinessServices
             //RockGenerator.CreateRandomRocks();
 
             //and a couple more in the same cell as the player
-            //RockGenerator.CreateRandomRocks(newPlayer.CurrentCell);
+            RockEntityManager.Instance.CreateRandomRocks(newPlayer.CurrentCell);
             Players.Add(newPlayer);
             Players.Add(new Player(null, WorldState.Instance.GetRandomGridCell(),new Vector2(50,50), _playerColors[_rand.Next(_playerColors.Length)]));
 

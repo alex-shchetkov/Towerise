@@ -6,6 +6,7 @@ import { GridLine } from "../../shared/GridLine";
 import { CoordLabel } from "../../shared/CoordLabel";
 import { Opponent } from '../../shared/Opponent';
 import { SocketService } from '../../shared/socket.service';
+import { RocksComponent } from './rock/rocks.component';
 
 @Component({
     selector: 'play-space',
@@ -20,9 +21,13 @@ export class PlaySpaceComponent implements OnInit {
     @ViewChild(OpponentsComponent)
     public opponentsComponent: OpponentsComponent;
 
+    @ViewChild(RocksComponent)
+    public rocks: RocksComponent;
+
     public gridLines = new Array<GridLine>();
 
     public coordLabels = new Array<CoordLabel>();
+    
 
     constructor(public socketService: SocketService) {
 
@@ -59,7 +64,7 @@ export class PlaySpaceComponent implements OnInit {
 
         for (let x = -5; x < 5; x++) {
             for (let y = -5; y < 5; y++) {
-                this.coordLabels.push(new CoordLabel(`(${x},${y})`, x * 100+45, y * 100+50));
+                this.coordLabels.push(new CoordLabel(`(${x+5},${y+5})`, x * 100+45, y * 100+50));
             }
         }
 
@@ -70,6 +75,8 @@ export class PlaySpaceComponent implements OnInit {
 
         return new Vector2(clientX - window.innerWidth / 2, clientY - window.innerHeight / 2).normalize();
     }
+
+   
 
 
     /**

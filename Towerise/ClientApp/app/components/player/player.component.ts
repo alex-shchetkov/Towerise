@@ -30,6 +30,9 @@ export class PlayerComponent implements OnInit {
     public cTick = 0;
     public prevProcessedTick = 0;
     public initialServerTick = 0;
+    private level:number = 1;
+    private currentExp:number = 0;
+    private maxExp:number = 100;
 
     public userCommandBuffer = new Array<UserCommand>();
     public commandBatchForServer = new Array<UserCommand>();
@@ -65,6 +68,18 @@ export class PlayerComponent implements OnInit {
 
     public getCurrentTick() {
         return this.cTick + this.initialServerTick;
+    }
+
+    //returns the current exp as a value between 0 and 1. Used by the expBar
+    public getCurrentExp() {
+        return this.currentExp / this.maxExp;
+    }
+
+
+    //returns the current hp as a value between 0 and 1. Used by the expBar
+    public getCurrentHp() {
+
+
     }
 
     
@@ -153,6 +168,7 @@ export class PlayerComponent implements OnInit {
             for (let p = 0; p < cells[c].Players.length; p++) {
 
                 if (cells[c].Players[p].Name === this.socketService.name) {
+                    this.currentExp = cells[c].Players[p].Exp;
                     if (!this.initialPositionSet) {
                         this.playerPosition.x = cells[c].Players[p].Coords.X;
                         this.playerPosition.y = cells[c].Players[p].Coords.Y;

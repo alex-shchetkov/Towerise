@@ -75,7 +75,7 @@ namespace BusinessServices
                 {
                     _leftOverSimMs = _leftOverSimMs % _msPerSimTick;
                     CurrentSimTick++;
-                    Console.WriteLine(CurrentSimTick);
+                    //Console.WriteLine(CurrentSimTick);
                     while (!Events.IsEmpty)
                     {
 

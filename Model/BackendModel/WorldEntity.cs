@@ -10,16 +10,25 @@ namespace Model.BackendModel
         
         //public event EventHandler MovedCells;
         public event EventHandler EntityMoved;
+
+        public Vector2 Size { get; set; }
+        public Vector2 Direction { get; set; }
+        public float CurrentHp { get; set; }
+        public float MaxHp { get; set; }
+
         
+
 
 
 
         public WorldEntity(GridCell cell, Vector2 initialLocalCoords)
         {
+            Id = Guid.NewGuid();
             CurrentCell = cell;
             LocalCoords = initialLocalCoords;
             cell.AddEntity(this);
             Coords = new Vector2(cell.GlobalX+LocalCoords.X, cell.GlobalY+LocalCoords.Y);
+
         }
 
         private int[] _cellAdjMap = new[] {4, 8, 2, 5, -1, 6, 0, 3, -1, 7, 1};

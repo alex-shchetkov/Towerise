@@ -5,11 +5,8 @@ using Backend;
 namespace Model.BackendModel
 {
     [Serializable]
-    public class Rock: WorldEntity,IDestructible
+    public class Rock: WorldEntity
     {
-        
-        public int MaxHp { get; set; }
-        public int CurrentHp { get; set; }
 
         public void DealDamage(Entity damageSource, int amount)
         {
