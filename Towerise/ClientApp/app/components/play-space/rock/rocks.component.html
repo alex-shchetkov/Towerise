@@ -1,12 +1,12 @@
-﻿<div *ngFor="let rock of rocks">
+<!--<div *ngFor="let rock of rocks">
     <image [attr.xlink:href]='sanitizer.bypassSecurityTrustResourceUrl(rockImgPath)' [style.width.%]="rock.size.x" [style.height.%]="rock.size.y" [attr.x]="rock.position.x" [attr.y]="rock.position.y" />
     <img [src]='sanitizer.bypassSecurityTrustResourceUrl(circlePath)' [style.width.%]="rock.size.x" [style.height.%]="rock.size.y" [attr.x]="rock.position.x" [attr.y]="rock.position.y" />
     <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ski_trail_rating_symbol-green_circle.svg/600px-Ski_trail_rating_symbol-green_circle.svg.png"/>
-</div>
-<svg *ngFor ="let rock of rocks" [attr.width]="rock.size.x" [attr.height]="rock.size.y" [attr.x]="rock.position.x" [attr.y]="rock.position.y">
+</div>-->
+<!--<svg *ngFor ="let rock of rocks" [attr.width]="rock.size.x" [attr.height]="rock.size.y" [attr.x]="rock.position.x" [attr.y]="rock.position.y">
     <svg:polygon  style="fill:#707F7D;" points="125.6,467.2 0,251.2 125.6,35.2 376.8,35.2 502.4,251.2 376.8,467.2 " />
     <svg:polygon  style="fill:#617270;" points="125.6,467.2 0,251.2 219.2,180.8 376.8,35.2 502.4,251.2 350.4,427.2 " />
-</svg>
-<svg:rect *ngFor ="let rock of rocks" [attr.x]="rock.position.x-rock.size.x/2" [attr.y]="rock.position.y-rock.size.y/2-3" [attr.width]="rock.size.x" height="3" style="fill: white; stroke-width: 1;stroke: black" />
-<svg:rect *ngFor ="let rock of rocks" [attr.x]="rock.position.x-rock.size.x/2" [attr.y]="rock.position.y-rock.size.y/2-2" [attr.width]="rock.getCurrentHp()*rock.size.x" height="1" style="fill: red;" />
+</svg>-->
+<!--<svg:rect *ngFor ="let rock of rocks" [attr.x]="rock.position.x-rock.size.x/2" [attr.y]="rock.position.y-rock.size.y/2-3" [attr.width]="rock.size.x" height="3" style="fill: white; stroke-width: 1;stroke: black" />
+<svg:rect *ngFor ="let rock of rocks" [attr.x]="rock.position.x-rock.size.x/2" [attr.y]="rock.position.y-rock.size.y/2-2" [attr.width]="rock.getCurrentHp()*rock.size.x" height="1" style="fill: red;" />-->
 
