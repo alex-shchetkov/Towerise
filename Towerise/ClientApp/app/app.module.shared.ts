@@ -14,15 +14,6 @@ import { RocksComponent } from "./components/play-space/rock/rocks.component";
 import { SocketService } from "./shared/socket.service";
 
 
-@Pipe({ name: 'safeHtml' })
-export class SafeHtmlPipe implements PipeTransform {
-    constructor(private sanitized: DomSanitizer) { }
-    transform(value: any) {
-        console.log(this.sanitized.bypassSecurityTrustHtml(value));
-        return this.sanitized.bypassSecurityTrustHtml(value);
-    }
-}
-
 @NgModule({
     entryComponents: [
         PlayerComponent,
